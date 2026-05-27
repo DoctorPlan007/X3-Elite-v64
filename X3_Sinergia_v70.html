@@ -769,7 +769,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(CFG.history.length===0){
     addMsg('x3','<strong>SISTEMA ALINEADO — X3 SINERGIA v7.0</strong><br/><br/>Hola Alexander. Tu escudo patrimonial está operativo. Tengo datos reales de 7 Isapres, calculador APV Art. 42 bis, simulador de catástrofes y generador de landings 3D.<br/><br/>¿Qué frente blindamos hoy?');
   }
-  if(!CFG.apiKey) setTimeout(()=>abrirModal(),1500);
+  // No pedir key si ya hay una integrada
+  if(!CFG.apiKey && !_K) setTimeout(()=>abrirModal(),1500);
+  // Si hay key integrada, usarla como default silencioso
+  if(!CFG.apiKey && _K){ CFG.apiKey=''; } // usa _K como fallback sin guardar en CFG
 });
 
 function loadConfig(){
@@ -803,10 +806,17 @@ async function fetchUF(){
 }
 
 // ── MODAL BÓVEDA ──
-function abrirModal(){ document.getElementById('modal-key').classList.add('show'); }
+function abrirModal(){
+  // Precargar la key integrada en el input para facilitar
+  const inp = document.getElementById('key-input');
+  if(inp && !inp.value && _K) inp.value = _K;
+  document.getElementById('modal-key').classList.add('show');
+}
 function cerrarModal(){ document.getElementById('modal-key').classList.remove('show'); }
 function guardarApiKey(){
-  const k=document.getElementById('key-input').value.trim();
+  let k=document.getElementById('key-input').value.trim();
+  // Aceptar también la key integrada si el usuario no ingresó nada
+  if(!k) k = _K;
   if(!k||!k.startsWith('AIza')){ alert('Key inválida. Debe comenzar con AIza'); return; }
   CFG.apiKey=k; saveConfig(); updateKeyBadge(); cerrarModal();
   beep(880,0.15); addMsg('sys','🔐 Núcleo Delta inyectado. Key privada activa.');
