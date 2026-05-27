@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1778608063584,
+      "tag": "0000_silent_unicorn",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1778608890880,
+      "tag": "0001_majestic_blink",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1778793549119,
+      "tag": "0002_mean_the_watchers",
+      "breakpoints": true
+    }
+  ]
+}

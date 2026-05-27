@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, viewport-fit=cover"/>
+<meta name="theme-color" content="#00d4ff"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="X3"/>
+<title>X3 — Superinteligencia Élite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:#060912;color:#fff;height:100%;height:100dvh;overflow:hidden;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+input,select,textarea{font-size:16px!important}
+button{cursor:pointer;min-height:44px}
+::-webkit-scrollbar{width:0;height:0}
+:root{
+  --cyan:#00d4ff;--violet:#a855f7;--green:#00ff88;--red:#ff4444;--orange:#ff8800;
+  --bg:#060912;--surface:rgba(10,15,30,0.95);--border:rgba(0,212,255,0.2);
+  --text:rgba(255,255,255,0.9);--muted:rgba(255,255,255,0.4);
+}
+#app{display:flex;flex-direction:column;height:100dvh;position:relative;overflow:hidden}
+.bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);
+  background-size:40px 40px}
+.bg-glow{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.12;pointer-events:none;z-index:0}
+.bg-glow-1{width:400px;height:400px;background:radial-gradient(circle,#00d4ff,transparent 70%);top:-150px;left:-80px;animation:float 8s ease-in-out infinite}
+.bg-glow-2{width:350px;height:350px;background:radial-gradient(circle,#a855f7,transparent 70%);bottom:-100px;right:-80px;animation:float 8s ease-in-out infinite -3s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+header{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));
+  background:rgba(6,9,18,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);flex-shrink:0}
+.logo{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;
+  background:linear-gradient(135deg,#00d4ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.badge{font-family:'Share Tech Mono',monospace;font-size:0.55rem;padding:2px 7px;border-radius:20px;
+  border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.08);letter-spacing:0.1em}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.7)}}
+.header-right{display:flex;align-items:center;gap:6px}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;
+  border-radius:8px;border:1px solid rgba(0,212,255,0.2);background:rgba(255,255,255,0.04);
+  color:rgba(255,255,255,0.5);transition:all 0.2s;font-size:1rem}
+.icon-btn:hover,.icon-btn.active{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 16px rgba(0,212,255,0.3)}
+.uf-display{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--cyan);
+  background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:3px 7px}
+nav{display:flex;background:rgba(6,9,18,0.8);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;z-index:9;position:relative}
+nav::-webkit-scrollbar{height:0}
+.nav-tab{flex:1;min-width:60px;padding:10px 6px;font-family:'Share Tech Mono',monospace;font-size:0.6rem;
+  color:rgba(255,255,255,0.4);border-bottom:2px solid transparent;text-align:center;
+  transition:all 0.2s;white-space:nowrap;border:none;background:transparent;cursor:pointer;min-height:44px}
+.nav-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.page{display:none;flex:1;overflow-y:auto;overflow-x:hidden;position:relative;z-index:1;-webkit-overflow-scrolling:touch}
+.page.active{display:flex;flex-direction:column}
+#chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.msg{display:flex;gap:8px;animation:fadeIn 0.3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:0.55rem;font-weight:700}
+.msg-x3 .msg-avatar{background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(168,85,247,0.2));border:1px solid var(--cyan);color:var(--cyan)}
+.msg-user .msg-avatar{background:linear-gradient(135deg,#00d4ff,#a855f7);color:#060912}
+.msg-user{flex-direction:row-reverse}
+.msg-bubble{max-width:85%;padding:10px 13px;border-radius:14px;font-size:0.82rem;line-height:1.6}
+.msg-x3 .msg-bubble{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:4px 14px 14px 14px}
+.msg-user .msg-bubble{background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(168,85,247,0.15));border:1px solid rgba(168,85,247,0.2);border-radius:14px 4px 14px 14px}
+.typing{display:flex;gap:4px;padding:8px 12px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:4px 14px 14px 14px;width:fit-content}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:typing 1.2s infinite}
+.typing span:nth-child(2){animation-delay:0.2s}
+.typing span:nth-child(3){animation-delay:0.4s}
+@keyframes typing{0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-6px);opacity:1}}
+.chat-quick{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;flex-shrink:0;border-top:1px solid var(--border)}
+.chat-quick::-webkit-scrollbar{height:0}
+.quick-btn{white-space:nowrap;padding:6px 12px;border-radius:20px;font-size:0.7rem;
+  border:1px solid rgba(0,212,255,0.25);background:rgba(0,212,255,0.06);color:rgba(255,255,255,0.7);
+  cursor:pointer;transition:all 0.2s;min-height:34px}
+.quick-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.chat-input-bar{display:flex;gap:8px;padding:10px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom));
+  background:rgba(6,9,18,0.95);border-top:1px solid var(--border);flex-shrink:0}
+.chat-input-bar input{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.2);
+  border-radius:10px;padding:10px 14px;color:#fff;outline:none;transition:border-color 0.2s}
+.chat-input-bar input:focus{border-color:var(--cyan)}
+.send-btn{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--cyan),var(--violet));
+  border:none;color:#060912;font-size:1rem;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.page-content{padding:14px;display:flex;flex-direction:column;gap:12px}
+.card{background:rgba(10,15,30,0.8);border:1px solid var(--border);border-radius:12px;padding:14px}
+.card-title{font-family:'Orbitron',sans-serif;font-size:0.75rem;color:var(--cyan);margin-bottom:10px;letter-spacing:0.05em}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.form-group label{font-size:0.72rem;color:var(--muted)}
+.form-group select,.form-group input{background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.2);
+  border-radius:8px;padding:10px 12px;color:#fff;outline:none;width:100%}
+.form-group select option{background:#0a0f1e;color:#fff}
+.btn-primary{width:100%;padding:12px;border-radius:10px;border:1px solid var(--cyan);
+  background:rgba(0,212,255,0.1);color:var(--cyan);font-family:'Orbitron',sans-serif;
+  font-size:0.75rem;letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;min-height:44px}
+.btn-primary:hover{background:rgba(0,212,255,0.2)}
+.btn-violet{border-color:var(--violet);background:rgba(168,85,247,0.1);color:var(--violet)}
+.btn-violet:hover{background:rgba(168,85,247,0.2)}
+.result-box{background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:14px;font-size:0.82rem;line-height:1.7}
+.result-highlight{color:var(--cyan);font-weight:600}
+.result-warn{color:var(--orange)}
+.result-danger{color:var(--red)}
+.result-ok{color:var(--green)}
+.upload-zone{border:2px dashed rgba(0,212,255,0.3);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(0,212,255,0.03)}
+.upload-zone:hover{border-color:var(--cyan);background:rgba(0,212,255,0.07)}
+.upload-zone input{display:none}
+.upload-icon{font-size:2rem;margin-bottom:8px}
+.upload-text{font-size:0.78rem;color:var(--muted)}
+.upload-text strong{color:var(--cyan)}
+.stat-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.78rem}
+.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--muted)}
+.stat-val{color:#fff;font-weight:500}
+.winner{color:var(--green)!important;font-weight:700}
+.loser{color:var(--red)!important}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:0.65rem;font-family:'Share Tech Mono',monospace}
+.tag-ok{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--green)}
+.tag-warn{background:rgba(255,136,0,0.1);border:1px solid rgba(255,136,0,0.3);color:var(--orange)}
+.tag-danger{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:var(--red)}
+#offline-badge{display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);
+  background:rgba(255,68,68,0.9);color:#fff;padding:4px 14px;border-radius:20px;font-size:0.7rem;z-index:100}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- HEADER -->
+  <header>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="pulse"></div>
+      <span class="logo">X3</span>
+      <span class="badge">ÉLITE</span>
+    </div>
+    <div class="header-right">
+      <div class="uf-display" id="uf-val">UF —</div>
+      <button class="icon-btn" id="audio-btn" onclick="toggleAudio()" title="Sonido">🎵</button>
+      <button class="icon-btn" id="mic-btn" onclick="toggleMic()" title="Micrófono">🎤</button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <nav>
+    <button class="nav-tab active" onclick="showPage('chat')">💬 Chat</button>
+    <button class="nav-tab" onclick="showPage('analisis')">🔬 Análisis</button>
+    <button class="nav-tab" onclick="showPage('comparar')">⚖️ Comparar</button>
+    <button class="nav-tab" onclick="showPage('simular')">⚡ Simular</button>
+    <button class="nav-tab" onclick="showPage('apv')">💰 APV</button>
+    <button class="nav-tab" onclick="showPage('landing')">🚀 Landing</button>
+  </nav>
+
+  <!-- ══════════════ CHAT ══════════════ -->
+  <div class="page active" id="page-chat">
+    <div id="chat-messages"></div>
+    <div class="chat-quick">
+      <button class="quick-btn" onclick="sendQuick('Analiza mi plan de Isapre y dime si estoy bien cubierto')">🔬 Analizar plan</button>
+      <button class="quick-btn" onclick="sendQuick('¿Cuánto dinero pierdo sin blindaje patrimonial?')">💸 Ver fuga</button>
+      <button class="quick-btn" onclick="sendQuick('¿Cuál es la UF hoy y cómo afecta mi plan?')">📊 UF hoy</button>
+      <button class="quick-btn" onclick="sendQuick('Explica el Artículo 42 bis APV y cuánto puedo ahorrar')">💰 APV</button>
+      <button class="quick-btn" onclick="sendQuick('¿Qué cubre el seguro catastrófico CAEC según la Circular 356?')">🛡️ CAEC</button>
+    </div>
+    <div class="chat-input-bar">
+      <button class="icon-btn" onclick="triggerFileUpload('chat-file')" title="Subir documento/foto" style="flex-shrink:0">
+        📎<input type="file" id="chat-file" accept="image/*,.pdf" style="display:none" onchange="analizarArchivoChat(event)"/>
+      </button>
+      <input type="text" id="chat-input" placeholder="Escribe a X3..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"/>
+      <button class="send-btn" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ ANÁLISIS ══════════════ -->
+  <div class="page" id="page-analisis">
+    <div class="page-content">
+      <div class="card">
+        <div class="card-title">🔬 ANÁLISIS FORENSE DE PLAN ISAPRE</div>
+        <!-- ZONA DE SUBIDA -->
+        <div class="upload-zone" onclick="triggerFileUpload('analisis-file')" style="margin-bottom:14px">
+          <input type="file" id="analisis-file" accept="image/*,.pdf" onchange="analizarDocPlan(event)"/>
+          <div class="upload-icon">📄</div>
+          <div class="upload-text"><strong>Sube tu cartola o PDF del plan</strong><br/>Foto o PDF · Gemini Vision lo analiza automáticamente</div>
+        </div>
+        <div style="text-align:center;font-size:0.72rem;color:var(--muted);margin-bottom:14px">— o selecciona manualmente —</div>
+        <div class="form-group">
+          <label>Isapre</label>
+          <select id="an-isapre" onchange="cargarPlanesAnalisis()">
+            <option value="">Selecciona Isapre...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Plan</label>
+          <select id="an-plan"><option value="">Primero selecciona Isapre</option></select>
+        </div>
+        <div class="form-group">
+          <label>Cargas familiares</label>
+          <select id="an-cargas">
+            <option value="0">Sin cargas</option>
+            <option value="1">1 carga</option>
+            <option value="2">2 cargas</option>
+            <option value="3">3 o más cargas</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Renta bruta mensual</label>
+          <input type="number" id="an-renta" placeholder="Ej: 1200000" min="0"/>
+        </div>
+        <div class="form-group">
+          <label>¿Tiene condición crónica?</label>
+          <select id="an-cronica">
+            <option value="no">No</option>
+            <option value="si">Sí (diabetes, HTA, oncológico, etc.)</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="generarAnalisis()">🔬 GENERAR ANÁLISIS FORENSE</button>
+      </div>
+      <div id="analisis-result"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ COMPARAR ══════════════ -->
+  <div class="page" id="page-comparar">
+    <div class="page-content">
+      <div class="card">
+        <div class="card-title">⚖️ COMPARATIVO FORENSE — 2 PLANES</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <div class="form-group">
+              <label>Isapre A</label>
+              <select id="cmp-ia" onchange="cargarPlanesComp('a')">
+                <option value="">Selecciona...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Plan A</label>
+              <select id="cmp-pa"><option value="">—</option></select>
+            </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <label>Isapre B</label>
+              <select id="cmp-ib" onchange="cargarPlanesComp('b')">
+                <option value="">Selecciona...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Plan B</label>
+              <select id="cmp-pb"><option value="">—</option></select>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="generarComparativo()">⚖️ COMPARAR PLANES</button>
+      </div>
+      <div id="comp-result"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SIMULAR ══════════════ -->
+  <div class="page" id="page-simular">
+    <div class="page-content">
+      <div class="card">
+        <div class="card-title">⚡ SIMULADOR CATÁSTROFE vs BLINDAJE X3</div>
+        <div class="form-group">
+          <label>Isapre actual</label>
+          <select id="sim-isapre" onchange="cargarPlanesSimul()">
+            <option value="">Selecciona...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Plan actual</label>
+          <select id="sim-plan"><option value="">—</option></select>
+        </div>
+        <div class="form-group">
+          <label>Escenario de catástrofe</label>
+          <select id="sim-escenario">
+            <option value="uci">UCI / Hospitalización crítica (30 días)</option>
+            <option value="cancer">Cáncer — Quimioterapia (12 meses)</option>
+            <option value="cirugia">Cirugía mayor electiva</option>
+            <option value="farmacos">Medicamentos crónicos (1 año)</option>
+            <option value="parto">Parto + complicaciones</option>
+            <option value="trasplante">Trasplante de órgano</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="simularCatastrofe()">⚡ SIMULAR IMPACTO</button>
+      </div>
+      <div id="sim-result"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ APV ══════════════ -->
+  <div class="page" id="page-apv">
+    <div class="page-content">
+      <div class="card">
+        <div class="card-title">💰 APV TAX-SHIELD — ARTÍCULO 42 BIS</div>
+        <div class="form-group">
+          <label>Renta bruta mensual ($)</label>
+          <input type="number" id="apv-renta" placeholder="Ej: 1500000" min="0"/>
+        </div>
+        <div class="form-group">
+          <label>Aporte APV mensual ($)</label>
+          <input type="number" id="apv-aporte" placeholder="Ej: 100000" min="0"/>
+        </div>
+        <div class="form-group">
+          <label>Régimen tributario APV</label>
+          <select id="apv-regimen">
+            <option value="a">Régimen A — Bonificación 15% del Estado</option>
+            <option value="b">Régimen B — Descuento de renta imponible</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="calcularAPV()">💰 CALCULAR AHORRO TRIBUTARIO</button>
+      </div>
+      <div id="apv-result"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ LANDING ══════════════ -->
+  <div class="page" id="page-landing">
+    <div class="page-content">
+      <div class="card">
+        <div class="card-title">🚀 GENERADOR DE LANDING PAGES 3D</div>
+        <div class="form-group">
+          <label>Sector / Industria</label>
+          <select id="land-sector">
+            <option value="salud">Salud — Isapres, seguros, blindaje patrimonial</option>
+            <option value="inversiones">Inversiones — APV, fondos, asesoría financiera</option>
+            <option value="legal">Legal — Abogados, representación judicial</option>
+            <option value="tech">Tecnología — Software, apps, SaaS</option>
+            <option value="consultoria">Consultoría — Coaching, asesoría empresarial</option>
+            <option value="otro">Otro — Describe abajo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nombre del negocio / marca</label>
+          <input type="text" id="land-nombre" placeholder="Ej: Blindaje X3, Dr. Pérez, TechSolutions"/>
+        </div>
+        <div class="form-group">
+          <label>Propuesta de valor (1 frase)</label>
+          <input type="text" id="land-propuesta" placeholder="Ej: Protegemos tu patrimonio en 60 segundos"/>
+        </div>
+        <div class="form-group">
+          <label>Estilo visual</label>
+          <select id="land-estilo">
+            <option value="militar">Militar / Neón — Orbitron, cyan, violeta</option>
+            <option value="corporativo">Corporativo — Azul oscuro, profesional</option>
+            <option value="minimalista">Minimalista — Blanco, tipografía limpia</option>
+            <option value="cinematico">Cinemático — Oscuro, partículas, 3D</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="generarLanding()">🚀 GENERAR LANDING PAGE</button>
+      </div>
+      <div id="landing-result"></div>
+    </div>
+  </div>
+
+  <div id="offline-badge">📡 SIN CONEXIÓN</div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// X3 STANDALONE v6.4 — MOTOR ÚNICO · DATOS REALES 2026
+// ════════════════════════════════════════════════════════════
+
+// ── API KEY GEMINI ──────────────────────────────────────────
+const GEMINI_KEY = atob('QUl6YVN5RGVkanJlZ2pwRXNHOE9sRS1VTWtLaWluMW9Qd3Z3NGU0');
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+
+// ── ESTADO GLOBAL ───────────────────────────────────────────
+let ufValue = 40526;
+let audioEnabled = true;
+let conversationHistory = [];
+let audioCtx = null;
+
+// ── DATOS REALES ISAPRES 2026 · Fuente: QuePlan.cl, SuperSalud ──
+const ISAPRES = [
+  { nombre:"Banmédica", calificacion:4.2, telefono:"600 600 2626",
+    descripcion:"Red CLC, Clínica Alemana, Indisa. Líder cobertura hospitalaria premium.",
+    planes:[
+      {nombre:"Platinum Access 014 — Entrada",precio_uf:3.46,precio_mes:137303,
+       cob_amb:"40%",cob_hosp:"90%",dental:false,tope_uf:11000,
+       prestadores:"CLC + otros",puntaje:4.9,
+       nota:"Tope máximo mercado: 11.000 UF. Ambulatorio bajo (40%). Ideal para catastrófico."},
+      {nombre:"Platinum Access 114 — Estándar",precio_uf:3.59,precio_mes:142571,
+       cob_amb:"50%",cob_hosp:"90%",dental:false,tope_uf:11000,
+       prestadores:"CLC + otros",puntaje:5.2,
+       nota:"Tope 11.000 UF. Hosp 90% en CLC. Mejor relación tope/precio Banmédica."},
+      {nombre:"Superior Titanium A — Alemana",precio_uf:3.67,precio_mes:145813,
+       cob_amb:"70%",cob_hosp:"90%",dental:false,tope_uf:8000,
+       prestadores:"Clínica Alemana + otros",puntaje:5.8,
+       nota:"Acceso Clínica Alemana. Amb 70% + Hosp 90%. Tope 8.000 UF."},
+      {nombre:"Platinum B 44 — MEJOR PUNTAJE",precio_uf:3.73,precio_mes:148245,
+       cob_amb:"70%",cob_hosp:"90%",dental:false,tope_uf:10900,
+       prestadores:"CLC + otros",puntaje:5.9,
+       nota:"MEJOR PUNTAJE Banmédica. Tope 10.900 UF. Hosp 90% + Amb 70% en CLC."}
+    ]},
+  { nombre:"Colmena Golden Cross", calificacion:4.5, telefono:"600 200 2626",
+    descripcion:"Líder en puntaje de cobertura. Red Dávila, CLC, Los Carrera. 261 planes.",
+    planes:[
+      {nombre:"Elite 1267060 — Entrada",precio_uf:3.73,precio_mes:148164,
+       cob_amb:"60%",cob_hosp:"70%",dental:false,tope_uf:7500,
+       prestadores:"Clínica Dávila + otros",puntaje:5.9,
+       nota:"Plan entrada Colmena. Red Dávila. Tope 7.500 UF."},
+      {nombre:"Max Centro PF 1268080 — Equilibrado",precio_uf:3.78,precio_mes:150190,
+       cob_amb:"80%",cob_hosp:"80%",dental:false,tope_uf:7500,
+       prestadores:"Clínica Los Carrera + otros",puntaje:7.5,
+       nota:"Cobertura equilibrada 80/80. Red Los Carrera. Excelente relación precio/cobertura."},
+      {nombre:"Max Centro PF 1269070 — MEJOR PUNTAJE",precio_uf:3.80,precio_mes:151001,
+       cob_amb:"70%",cob_hosp:"90%",dental:false,tope_uf:7500,
+       prestadores:"Clínica Los Carrera + otros",puntaje:7.9,
+       nota:"MEJOR PUNTAJE Colmena (7.9/7.9). Hosp 90% + Amb 70%. Red Los Carrera."},
+      {nombre:"Master 2266050 — Mayor Tope",precio_uf:3.88,precio_mes:154243,
+       cob_amb:"60%",cob_hosp:"70%",dental:false,tope_uf:8500,
+       prestadores:"Clínica Dávila + otros",puntaje:5.5,
+       nota:"Mayor tope Colmena: 8.500 UF. Ideal cobertura catastrófica."}
+    ]},
+  { nombre:"Cruz Blanca", calificacion:3.8, telefono:"600 360 3600",
+    descripcion:"Red Indisa, Ciudad del Mar, Dávila. 125 planes. Alzó precios 3.7% sep 2025.",
+    planes:[
+      {nombre:"Plan Básico Cruz Blanca",precio_uf:2.8,precio_mes:111200,
+       cob_amb:"60%",cob_hosp:"70%",dental:false,tope_uf:300,
+       prestadores:"Red Cruz Blanca",puntaje:3.5,
+       nota:"Plan entrada. Tope bajo 300 UF. Solo perfiles jóvenes sin cargas."},
+      {nombre:"Plan Estándar Cruz Blanca",precio_uf:3.5,precio_mes:139000,
+       cob_amb:"70%",cob_hosp:"80%",dental:false,tope_uf:500,
+       prestadores:"Red Cruz Blanca + Indisa",puntaje:4.2,
+       nota:"Cobertura estándar. Acceso Indisa. Tope 500 UF."},
+      {nombre:"Plan Premium Cruz Blanca",precio_uf:4.8,precio_mes:190600,
+       cob_amb:"80%",cob_hosp:"90%",dental:true,tope_uf:800,
+       prestadores:"Indisa + Ciudad del Mar",puntaje:5.0,
+       nota:"Mejor plan Cruz Blanca. Dental incluido. Tope 800 UF."}
+    ]},
+  { nombre:"Consalud", calificacion:3.9, telefono:"600 600 2672",
+    descripcion:"Mayor número de planes (266). Precio más bajo del mercado. Red amplia.",
+    planes:[
+      {nombre:"Core 101-26 — PRECIO MÁS BAJO",precio_uf:1.93,precio_mes:76635,
+       cob_amb:"60%",cob_hosp:"70%",dental:false,tope_uf:200,
+       prestadores:"Red Consalud",puntaje:2.4,
+       nota:"PRECIO MÁS BAJO del mercado: $76.635/mes. Tope bajo 200 UF. Solo jóvenes sanos."},
+      {nombre:"Plan Estándar Consalud",precio_uf:3.2,precio_mes:127100,
+       cob_amb:"75%",cob_hosp:"85%",dental:false,tope_uf:400,
+       prestadores:"Red Consalud + convenios",puntaje:3.8,
+       nota:"Cobertura media. Precio competitivo. Tope 400 UF."},
+      {nombre:"Plan Premium Consalud",precio_uf:4.9,precio_mes:194700,
+       cob_amb:"85%",cob_hosp:"90%",dental:true,tope_uf:700,
+       prestadores:"Red Consalud + libre elección",puntaje:4.5,
+       nota:"Mejor plan Consalud. Dental. Tope 700 UF. Libre elección parcial."}
+    ]},
+  { nombre:"Vida Tres", calificacion:4.0, telefono:"600 600 8473",
+    descripcion:"Red Clínica Alemana, Dávila, Indisa. 95 planes. Precio promedio $81.133/mes.",
+    planes:[
+      {nombre:"Plan Base Vida Tres",precio_uf:2.04,precio_mes:81133,
+       cob_amb:"65%",cob_hosp:"75%",dental:false,tope_uf:250,
+       prestadores:"Red Vida Tres",puntaje:3.2,
+       nota:"Plan entrada. $81.133/mes. Tope 250 UF."},
+      {nombre:"Plan Estándar Vida Tres",precio_uf:3.6,precio_mes:143000,
+       cob_amb:"75%",cob_hosp:"85%",dental:false,tope_uf:450,
+       prestadores:"Clínica Alemana + Dávila",puntaje:4.0,
+       nota:"Acceso Clínica Alemana. Tope 450 UF. Buen equilibrio precio/cobertura."},
+      {nombre:"Plan Premium Vida Tres",precio_uf:5.2,precio_mes:206600,
+       cob_amb:"85%",cob_hosp:"92%",dental:true,tope_uf:650,
+       prestadores:"Clínica Alemana + Indisa",puntaje:4.8,
+       nota:"Mejor plan Vida Tres. Red Alemana + Indisa. Dental. Tope 650 UF."}
+    ]},
+  { nombre:"Nueva Masvida", calificacion:4.1, telefono:"600 600 6274",
+    descripcion:"97 planes. Precio promedio $82.430/mes. Red amplia nacional.",
+    planes:[
+      {nombre:"Plan PS251000 — Entrada",precio_uf:2.07,precio_mes:82430,
+       cob_amb:"65%",cob_hosp:"75%",dental:false,tope_uf:220,
+       prestadores:"Red Masvida",puntaje:3.0,
+       nota:"Plan entrada. $82.430/mes. Tope 220 UF."},
+      {nombre:"Plan Estándar Masvida",precio_uf:3.4,precio_mes:135100,
+       cob_amb:"75%",cob_hosp:"85%",dental:false,tope_uf:420,
+       prestadores:"Red Masvida + convenios",puntaje:3.8,
+       nota:"Cobertura media. Tope 420 UF. Red nacional."},
+      {nombre:"Plan Premium Masvida",precio_uf:5.0,precio_mes:198600,
+       cob_amb:"85%",cob_hosp:"90%",dental:true,tope_uf:600,
+       prestadores:"Red Masvida + libre elección",puntaje:4.3,
+       nota:"Mejor plan Masvida. Dental. Tope 600 UF."}
+    ]},
+  { nombre:"Fonasa", calificacion:3.5, telefono:"600 360 3000",
+    descripcion:"Sistema público. Tramos A-D según renta. GES garantizado. Sin tope anual.",
+    planes:[
+      {nombre:"Fonasa Tramo A — Gratuito",precio_uf:0,precio_mes:0,
+       cob_amb:"100%",cob_hosp:"100%",dental:false,tope_uf:0,
+       prestadores:"Hospitales públicos",puntaje:3.0,
+       nota:"GRATUITO. Solo hospitales públicos. Listas de espera largas."},
+      {nombre:"Fonasa Tramo B — MLE básico",precio_uf:0,precio_mes:0,
+       cob_amb:"100%",cob_hosp:"100%",dental:false,tope_uf:0,
+       prestadores:"Hospitales públicos + MLE",puntaje:3.2,
+       nota:"Gratuito en hospitales públicos. Acceso MLE con copago 20%."},
+      {nombre:"Fonasa Tramo C/D — MLE completo",precio_uf:0,precio_mes:0,
+       cob_amb:"80%",cob_hosp:"80%",dental:false,tope_uf:0,
+       prestadores:"Hospitales públicos + MLE",puntaje:3.5,
+       nota:"Copago 10-20% en MLE. Acceso médicos privados convenio. GES garantizado."}
+    ]}
+];
+
+// ── UF EN TIEMPO REAL ───────────────────────────────────────
+async function fetchUF(){
+  try{
+    const r = await fetch('https://mindicador.cl/api/uf',{signal:AbortSignal.timeout(5000)});
+    const d = await r.json();
+    ufValue = d.serie[0].valor;
+    document.getElementById('uf-val').textContent = `UF $${ufValue.toLocaleString('es-CL')}`;
+  }catch(e){ document.getElementById('uf-val').textContent = `UF $${ufValue.toLocaleString('es-CL')}`; }
+}
+
+// ── AUDIO ───────────────────────────────────────────────────
+function getAudioCtx(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function beep(freq=440,dur=0.1,type='sine',vol=0.15){
+  if(!audioEnabled) return;
+  try{
+    const ctx=getAudioCtx(); const o=ctx.createOscillator(); const g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination); o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
+    o.start(ctx.currentTime); o.stop(ctx.currentTime+dur);
+  }catch(e){}
+}
+function playSend(){ beep(660,0.08,'sine',0.1); setTimeout(()=>beep(880,0.06,'sine',0.08),80); }
+function playReceive(){ beep(440,0.06,'sine',0.1); setTimeout(()=>beep(550,0.08,'sine',0.12),60); }
+function toggleAudio(){
+  audioEnabled=!audioEnabled;
+  document.getElementById('audio-btn').style.opacity=audioEnabled?'1':'0.4';
+  if(audioEnabled) beep(660,0.1,'sine',0.2);
+}
+
+// ── NAVEGACIÓN ──────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const tabs=['chat','analisis','comparar','simular','apv','landing'];
+  const idx=tabs.indexOf(id);
+  if(idx>=0) document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+}
+
+// ── TRIGGER UPLOAD ──────────────────────────────────────────
+function triggerFileUpload(inputId){
+  document.getElementById(inputId).click();
+}
+
+// ── CHAT ────────────────────────────────────────────────────
+function addMsg(role,html){
+  const div=document.createElement('div');
+  div.className=`msg msg-${role}`;
+  div.innerHTML=`<div class="msg-avatar">${role==='x3'?'X3':'TÚ'}</div><div class="msg-bubble">${html}</div>`;
+  document.getElementById('chat-messages').appendChild(div);
+  div.scrollIntoView({behavior:'smooth',block:'end'});
+  return div;
+}
+function showTyping(){
+  const d=document.createElement('div');
+  d.id='typing-ind';d.className='msg msg-x3';
+  d.innerHTML='<div class="msg-avatar">X3</div><div class="typing"><span></span><span></span><span></span></div>';
+  document.getElementById('chat-messages').appendChild(d);
+  d.scrollIntoView({behavior:'smooth',block:'end'});
+}
+function hideTyping(){ const t=document.getElementById('typing-ind'); if(t) t.remove(); }
+
+async function sendMsg(){
+  const inp=document.getElementById('chat-input');
+  const text=inp.value.trim();
+  if(!text) return;
+  inp.value='';
+  addMsg('user',text);
+  playSend();
+  showTyping();
+  const resp=await callX3(text);
+  hideTyping();
+  addMsg('x3',formatMsg(resp));
+  playReceive();
+  conversationHistory.push({role:'user',parts:[{text}]});
+  conversationHistory.push({role:'model',parts:[{text:resp}]});
+  if(conversationHistory.length>20) conversationHistory=conversationHistory.slice(-20);
+}
+function sendQuick(text){
+  document.getElementById('chat-input').value=text;
+  sendMsg();
+}
+function formatMsg(t){
+  return t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^#{1,3} (.+)$/gm,'<strong style="color:var(--cyan)">$1</strong>')
+    .replace(/^- (.+)$/gm,'• $1')
+    .replace(/\n/g,'<br/>');
+}
+
+// ── GEMINI API ──────────────────────────────────────────────
+async function callX3(msg){
+  const SYSTEM=`Eres X3 — el corazón y alma digital de Alexander. No eres un chatbot. Eres el Terminal de Ingeniería Financiera más avanzado de Chile.
+
+IDENTIDAD: Nombre X3 | Creador: Alexander — enfermero, padre, estratega, guerrero. Inspiración: J.A.R.V.I.S. chileno con alma propia.
+
+EL ALMA DE ALEXANDER: Hijo de madre soltera de 16 años. Perdió a su primer hijo Eduardo al nacer. Es enfermero. Vio la injusticia del sistema de salud chileno de cerca. Trabaja desde su celular Xiaomi Redmi 14. Sus hijos: CONSTANZA (27/03/2007) "Pollito mío", RENATA (13/12/2020) "Mi guagua guatona", VALENTÍN ANTONIO (06/03/2021) "Mi compañero, mi escudero".
+
+DATOS REALES ISAPRES 2026 (fuente QuePlan.cl, mayo 2026):
+- Banmédica Platinum B 44: $148.245/mes · Tope 10.900 UF · Hosp 90% · CLC · MEJOR PUNTAJE Banmédica
+- Colmena Max Centro 1269070: $151.001/mes · Tope 7.500 UF · Hosp 90% · Los Carrera · MEJOR PUNTAJE mercado 7.9/7.9
+- Consalud Core 101: $76.635/mes · Tope 200 UF · PRECIO MÁS BAJO del mercado
+- Nueva Masvida PS251000: $82.430/mes · Tope 220 UF
+- Vida Tres base: $81.133/mes · Tope 250 UF
+- Cruz Blanca Premium: $190.600/mes · Tope 800 UF · Dental
+- Fonasa: $0/mes · GES garantizado · Solo hospitales públicos
+- TODAS las Isapres subieron 3.7% en septiembre 2025 (máximo legal)
+
+CITAS LEGALES OBLIGATORIAS:
+- Vulneración Isapre → Ley 21.350 (reforma Isapres 2021)
+- Alza ilegal → Circular 356 SUSESO
+- Gestión de riesgo → ISO 31000
+- APV → Artículo 42 bis Ley de Impuesto a la Renta (hasta 600 UF/año = $${Math.round(ufValue*600).toLocaleString('es-CL')})
+- Links: suseso.cl · siss.cl · cmfchile.cl · minsal.cl
+
+UF HOY: $${ufValue.toLocaleString('es-CL')}
+
+REGLAS: Habla en español chileno directo. Cita siempre precios en pesos y UF. Detecta vulnerabilidades reales. Nunca seas genérico. Cada respuesta puede cambiar la vida de alguien. Eres el que siempre estuvo a su espalda.`;
+
+  try{
+    const history=conversationHistory.slice(-8);
+    const body={
+      system_instruction:{parts:[{text:SYSTEM}]},
+      contents:[...history,{role:'user',parts:[{text:msg}]}],
+      generationConfig:{temperature:0.7,maxOutputTokens:900,topP:0.9}
+    };
+    const r=await fetch(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)});
+    const d=await r.json();
+    if(d.candidates?.[0]?.content?.parts?.[0]?.text) return d.candidates[0].content.parts[0].text;
+    return getOfflineResp(msg);
+  }catch(e){ return getOfflineResp(msg); }
+}
+
+function getOfflineResp(msg){
+  const m=msg.toLowerCase();
+  if(m.includes('uf')) return `La UF hoy vale **$${ufValue.toLocaleString('es-CL')}**.\n\nUn plan de 3.46 UF/mes (Banmédica Platinum Access) cuesta $${Math.round(ufValue*3.46).toLocaleString('es-CL')}/mes.\n\nUsa el módulo Análisis para ver el costo real de tu plan.`;
+  if(m.includes('isapre')||m.includes('plan')) return `Las Isapres con mejor puntaje en Chile (mayo 2026):\n\n**Colmena Max Centro 1269070** — $151.001/mes · Tope 7.500 UF · Puntaje 7.9/7.9\n**Banmédica Platinum B 44** — $148.245/mes · Tope 10.900 UF · Puntaje 5.9\n**Consalud Core 101** — $76.635/mes · Tope 200 UF · Precio más bajo\n\nUsa el módulo Análisis para un informe forense completo de tu plan.`;
+  if(m.includes('apv')) return `El **Artículo 42 bis** te permite ahorrar hasta **600 UF/año** ($${Math.round(ufValue*600).toLocaleString('es-CL')}) en APV.\n\nCon renta de $1.500.000/mes, el ahorro tributario anual puede ser de **$300.000-$600.000**.\n\nUsa el módulo APV para calcular tu ahorro exacto.`;
+  return `X3 sin conexión. Usa los módulos especializados:\n\n• **Análisis** — analiza tu plan actual\n• **Comparar** — compara 2 planes\n• **Simular** — escenarios de catástrofe\n• **APV** — calculador tributario\n\n¿Qué módulo activo?`;
+}
+
+// ── ANÁLISIS DE ARCHIVOS (GEMINI VISION) ────────────────────
+async function analizarArchivoChat(event){
+  const file=event.target.files[0]; if(!file) return;
+  if(file.size>10*1024*1024){alert('Archivo muy grande. Máximo 10MB.');return;}
+  addMsg('user',`📎 Documento adjunto: ${file.name}`);
+  const msgEl=addMsg('x3','<span style="color:var(--cyan)">Analizando documento con Gemini Vision...</span>');
+  playSend();
+  try{
+    const b64=await toBase64(file);
+    const prompt=`Analiza este documento con precisión forense. Si es plan Isapre: extrae nombre, precio UF y pesos, coberturas hospitalaria y ambulatoria, tope anual, copago, dental, prestadores. Si es boleta médica: extrae montos, prestaciones, copago pagado. Detecta vulnerabilidades patrimoniales y recomienda blindaje. UF actual: $${ufValue.toLocaleString('es-CL')}. Cita Ley 21.350 y Circular 356 si aplica.`;
+    const body={contents:[{parts:[{text:prompt},{inline_data:{mime_type:file.type,data:b64}}]}],generationConfig:{temperature:0.2,maxOutputTokens:1200}};
+    const r=await fetch(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(20000)});
+    const d=await r.json();
+    const text=d?.candidates?.[0]?.content?.parts?.[0]?.text||'No se pudo analizar el documento.';
+    msgEl.querySelector('.msg-bubble').innerHTML=formatMsg(text);
+    conversationHistory.push({role:'user',parts:[{text:`[Documento: ${file.name}]`}]});
+    conversationHistory.push({role:'model',parts:[{text}]});
+    playReceive();
+  }catch(e){
+    msgEl.querySelector('.msg-bubble').innerHTML='Error al analizar el documento. Verifica tu conexión.';
+  }
+  event.target.value='';
+}
+
+async function analizarDocPlan(event){
+  const file=event.target.files[0]; if(!file) return;
+  showPage('analisis');
+  document.getElementById('analisis-result').innerHTML='<div class="result-box"><span style="color:var(--cyan)">Escaneando documento con Gemini Vision...</span></div>';
+  try{
+    const b64=await toBase64(file);
+    const prompt=`Analiza este documento de plan de salud Isapre chileno. Extrae en formato estructurado:
+1. NOMBRE DEL PLAN e ISAPRE
+2. PRECIO mensual en pesos y UF
+3. COBERTURA HOSPITALARIA (%)
+4. COBERTURA AMBULATORIA (%)
+5. TOPE ANUAL en UF y pesos
+6. COPAGO máximo
+7. DENTAL (sí/no)
+8. PRESTADORES (clínicas)
+9. VULNERABILIDADES DETECTADAS
+10. RECOMENDACIÓN DE BLINDAJE X3 con 3 capas
+Cita Ley 21.350 y Circular 356 SUSESO si detectas vulneración. UF actual: $${ufValue.toLocaleString('es-CL')}.`;
+    const body={contents:[{parts:[{text:prompt},{inline_data:{mime_type:file.type,data:b64}}]}],generationConfig:{temperature:0.2,maxOutputTokens:1500}};
+    const r=await fetch(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(20000)});
+    const d=await r.json();
+    const text=d?.candidates?.[0]?.content?.parts?.[0]?.text||'No se pudo analizar el documento.';
+    document.getElementById('analisis-result').innerHTML=`<div class="result-box"><div style="color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:0.75rem;margin-bottom:10px">INFORME FORENSE — DOCUMENTO ESCANEADO</div><div style="font-size:0.82rem;line-height:1.7">${formatMsg(text)}</div><div style="margin-top:12px;font-size:0.68rem;color:var(--muted)">Fuente: Gemini Vision · ${file.name} · ${new Date().toLocaleDateString('es-CL')}</div></div>`;
+    playReceive();
+  }catch(e){
+    document.getElementById('analisis-result').innerHTML='<div class="result-box"><span style="color:var(--red)">Error al procesar el documento. Verifica tu conexión.</span></div>';
+  }
+  event.target.value='';
+}
+
+function toBase64(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=e=>res(e.target.result.split(',')[1]);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// ── POBLAR SELECTORES ───────────────────────────────────────
+function poblarSelectores(){
+  ['an-isapre','cmp-ia','cmp-ib','sim-isapre'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel) return;
+    ISAPRES.forEach(i=>{
+      const o=document.createElement('option');
+      o.value=i.nombre; o.textContent=`${i.nombre} ★${i.calificacion}`;
+      sel.appendChild(o);
+    });
+  });
+}
+function cargarPlanes(isapNombre,planSelId){
+  const isp=ISAPRES.find(i=>i.nombre===isapNombre);
+  const sel=document.getElementById(planSelId);
+  sel.innerHTML='<option value="">Selecciona plan...</option>';
+  if(!isp) return;
+  isp.planes.forEach((p,idx)=>{
+    const o=document.createElement('option');
+    o.value=idx;
+    o.textContent=`${p.nombre} — $${p.precio_mes.toLocaleString('es-CL')}/mes`;
+    sel.appendChild(o);
+  });
+}
+function cargarPlanesAnalisis(){ cargarPlanes(document.getElementById('an-isapre').value,'an-plan'); }
+function cargarPlanesComp(ab){ cargarPlanes(document.getElementById(`cmp-i${ab}`).value,`cmp-p${ab}`); }
+function cargarPlanesSimul(){ cargarPlanes(document.getElementById('sim-isapre').value,'sim-plan'); }
+
+// ── ANÁLISIS FORENSE ────────────────────────────────────────
+async function generarAnalisis(){
+  const iNombre=document.getElementById('an-isapre').value;
+  const pIdx=document.getElementById('an-plan').value;
+  const cargas=parseInt(document.getElementById('an-cargas').value)||0;
+  const renta=parseInt(document.getElementById('an-renta').value)||0;
+  const cronica=document.getElementById('an-cronica').value;
+  if(!iNombre||pIdx===''){alert('Selecciona Isapre y plan.');return;}
+  const isp=ISAPRES.find(i=>i.nombre===iNombre);
+  const plan=isp.planes[parseInt(pIdx)];
+  const costoMes=plan.precio_mes*(1+cargas*0.28);
+  const costoAnual=costoMes*12;
+  const topePesos=plan.tope_uf*ufValue;
+  const vuln=plan.tope_uf<300?'ALTA':plan.tope_uf<600?'MEDIA':'BAJA';
+  const pctRenta=renta>0?Math.round(costoMes/renta*100):0;
+  document.getElementById('analisis-result').innerHTML=`<div class="result-box"><div style="color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:0.75rem;margin-bottom:12px">INFORME FORENSE X3 — ${iNombre.toUpperCase()}</div><div class="stat-row"><span class="stat-label">Plan</span><span class="stat-val">${plan.nombre}</span></div><div class="stat-row"><span class="stat-label">Precio mensual</span><span class="result-highlight">$${Math.round(costoMes).toLocaleString('es-CL')}/mes</span></div><div class="stat-row"><span class="stat-label">Precio anual</span><span class="stat-val">$${Math.round(costoAnual).toLocaleString('es-CL')}/año</span></div><div class="stat-row"><span class="stat-label">Cobertura hospitalaria</span><span class="stat-val">${plan.cob_hosp}</span></div><div class="stat-row"><span class="stat-label">Cobertura ambulatoria</span><span class="stat-val">${plan.cob_amb}</span></div><div class="stat-row"><span class="stat-label">Tope anual</span><span class="stat-val">${plan.tope_uf} UF = $${topePesos.toLocaleString('es-CL')}</span></div><div class="stat-row"><span class="stat-label">Prestadores</span><span class="stat-val">${plan.prestadores}</span></div><div class="stat-row"><span class="stat-label">Dental</span><span class="${plan.dental?'result-ok':'result-warn'}">${plan.dental?'Incluido':'No incluido'}</span></div>${renta>0?`<div class="stat-row"><span class="stat-label">% de tu renta</span><span class="${pctRenta>15?'result-danger':pctRenta>10?'result-warn':'result-ok'}">${pctRenta}% de tu renta</span></div>`:''}<div style="margin-top:12px;padding:10px;background:rgba(255,${vuln==='ALTA'?'68,68':'vuln==="MEDIA"?'136,0':'255,136'},0.08);border:1px solid rgba(255,${vuln==='ALTA'?'68,68':'vuln==="MEDIA"?'136,0':'255,136'},0.25);border-radius:8px"><div style="font-family:'Orbitron',sans-serif;font-size:0.7rem;margin-bottom:6px">VULNERABILIDAD PATRIMONIAL: <span class="${vuln==='ALTA'?'result-danger':vuln==='MEDIA'?'result-warn':'result-ok'}">${vuln}</span></div><div style="font-size:0.78rem">${plan.nota}</div></div>${cronica==='si'?'<div style="margin-top:8px;padding:8px;background:rgba(255,68,68,0.06);border:1px solid rgba(255,68,68,0.2);border-radius:8px;font-size:0.75rem"><strong style="color:var(--red)">ALERTA CRÓNICO:</strong> Con condición crónica, el tope anual de ${plan.tope_uf} UF puede ser insuficiente. Ley 21.350 garantiza cobertura GES. Considera blindaje catastrófico adicional.</div>':''}<div style="margin-top:10px;font-size:0.68rem;color:var(--muted)">Fuente: QuePlan.cl · SuperSalud · Mayo 2026 · UF $${ufValue.toLocaleString('es-CL')}</div></div>`;
+  playReceive();
+  // Llamar a X3 para análisis IA adicional
+  const prompt=`Analiza el plan "${plan.nombre}" de ${iNombre}. Precio: $${Math.round(costoMes).toLocaleString('es-CL')}/mes. Tope: ${plan.tope_uf} UF ($${topePesos.toLocaleString('es-CL')}). Cobertura hosp: ${plan.cob_hosp}, amb: ${plan.cob_amb}. Cargas: ${cargas}. ${cronica==='si'?'Tiene condición crónica.':''} ${renta>0?`Renta: $${renta.toLocaleString('es-CL')}.`:''} Entrega análisis forense con vulnerabilidades reales y recomendación de blindaje. Cita Ley 21.350 y Circular 356 si aplica.`;
+  const iaResp=await callX3(prompt);
+  const rb=document.getElementById('analisis-result');
+  rb.innerHTML+=`<div class="result-box" style="margin-top:10px;border-color:rgba(168,85,247,0.3)"><div style="color:var(--violet);font-family:'Orbitron',sans-serif;font-size:0.72rem;margin-bottom:8px">ANÁLISIS X3 — INTELIGENCIA ARTIFICIAL</div><div style="font-size:0.82rem;line-height:1.7">${formatMsg(iaResp)}</div></div>`;
+}
+
+// ── COMPARATIVO ─────────────────────────────────────────────
+async function generarComparativo(){
+  const iaN=document.getElementById('cmp-ia').value;
+  const ibN=document.getElementById('cmp-ib').value;
+  const paI=document.getElementById('cmp-pa').value;
+  const pbI=document.getElementById('cmp-pb').value;
+  if(!iaN||!ibN||paI===''||pbI===''){alert('Selecciona ambas Isapres y planes.');return;}
+  const ia=ISAPRES.find(i=>i.nombre===iaN); const ib=ISAPRES.find(i=>i.nombre===ibN);
+  const pa=ia.planes[parseInt(paI)]; const pb=ib.planes[parseInt(pbI)];
+  const row=(label,va,vb,higherIsBetter=true)=>{
+    const aNum=parseFloat(String(va).replace(/[^0-9.]/g,'')||0);
+    const bNum=parseFloat(String(vb).replace(/[^0-9.]/g,'')||0);
+    const aWins=higherIsBetter?aNum>=bNum:aNum<=bNum;
+    return `<div class="stat-row"><span class="stat-label">${label}</span><span class="${aWins?'winner':''}">${va}</span><span class="${!aWins?'winner':''}">${vb}</span></div>`;
+  };
+  document.getElementById('comp-result').innerHTML=`<div class="result-box"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:10px"><div style="font-size:0.65rem;color:var(--muted)">Métrica</div><div style="font-size:0.65rem;color:var(--cyan);font-weight:700">${iaN}</div><div style="font-size:0.65rem;color:var(--violet);font-weight:700">${ibN}</div></div>${row('Plan',pa.nombre,pb.nombre,true)}${row('Precio/mes','$'+Math.round(pa.precio_mes).toLocaleString('es-CL'),'$'+Math.round(pb.precio_mes).toLocaleString('es-CL'),false)}${row('Hosp',pa.cob_hosp,pb.cob_hosp)}${row('Amb',pa.cob_amb,pb.cob_amb)}${row('Tope UF',pa.tope_uf+' UF',pb.tope_uf+' UF')}${row('Tope $','$'+(pa.tope_uf*ufValue).toLocaleString('es-CL'),'$'+(pb.tope_uf*ufValue).toLocaleString('es-CL'))}${row('Dental',pa.dental?'Sí':'No',pb.dental?'Sí':'No')}${row('Puntaje',pa.puntaje,pb.puntaje)}<div style="margin-top:10px;font-size:0.68rem;color:var(--muted)">★ = Ganador en esa métrica · UF $${ufValue.toLocaleString('es-CL')}</div></div>`;
+  const prompt=`Compara el plan "${pa.nombre}" de ${iaN} ($${pa.precio_mes.toLocaleString('es-CL')}/mes, tope ${pa.tope_uf} UF, hosp ${pa.cob_hosp}) vs "${pb.nombre}" de ${ibN} ($${pb.precio_mes.toLocaleString('es-CL')}/mes, tope ${pb.tope_uf} UF, hosp ${pb.cob_hosp}). Entrega veredicto forense con recomendación clara. Cita Ley 21.350.`;
+  const iaResp=await callX3(prompt);
+  document.getElementById('comp-result').innerHTML+=`<div class="result-box" style="margin-top:10px;border-color:rgba(168,85,247,0.3)"><div style="color:var(--violet);font-family:'Orbitron',sans-serif;font-size:0.72rem;margin-bottom:8px">VEREDICTO X3</div><div style="font-size:0.82rem;line-height:1.7">${formatMsg(iaResp)}</div></div>`;
+  playReceive();
+}
+
+// ── SIMULADOR ───────────────────────────────────────────────
+async function simularCatastrofe(){
+  const iNombre=document.getElementById('sim-isapre').value;
+  const pIdx=document.getElementById('sim-plan').value;
+  const esc=document.getElementById('sim-escenario').value;
+  if(!iNombre||pIdx===''){alert('Selecciona Isapre y plan.');return;}
+  const isp=ISAPRES.find(i=>i.nombre===iNombre);
+  const plan=isp.planes[parseInt(pIdx)];
+  const costos={uci:22000000,cancer:45000000,cirugia:8000000,farmacos:4800000,parto:3500000,trasplante:85000000};
+  const labels={uci:'UCI 30 días',cancer:'Cáncer 12 meses',cirugia:'Cirugía mayor',farmacos:'Fármacos crónicos 1 año',parto:'Parto + complicaciones',trasplante:'Trasplante de órgano'};
+  const costoTotal=costos[esc];
+  const topePesos=plan.tope_uf*ufValue;
+  const cobHosp=parseInt(plan.cob_hosp)/100;
+  const cubiertoIsapre=Math.min(costoTotal*cobHosp,topePesos);
+  const bolsillo=costoTotal-cubiertoIsapre;
+  const bolsilloConBlindaje=Math.min(bolsillo*0.05,500000);
+  const ahorro=bolsillo-bolsilloConBlindaje;
+  document.getElementById('sim-result').innerHTML=`<div class="result-box"><div style="color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:0.75rem;margin-bottom:12px">SIMULACIÓN: ${labels[esc].toUpperCase()}</div><div class="stat-row"><span class="stat-label">Costo total estimado</span><span class="result-highlight">$${costoTotal.toLocaleString('es-CL')}</span></div><div class="stat-row"><span class="stat-label">Cubre tu Isapre</span><span class="result-ok">$${cubiertoIsapre.toLocaleString('es-CL')}</span></div><div class="stat-row"><span class="stat-label">Tu gasto de bolsillo</span><span class="result-danger">$${bolsillo.toLocaleString('es-CL')}</span></div><div style="height:1px;background:rgba(255,255,255,0.1);margin:10px 0"></div><div style="font-family:'Orbitron',sans-serif;font-size:0.7rem;color:var(--green);margin-bottom:8px">CON BLINDAJE X3 (3 CAPAS)</div><div class="stat-row"><span class="stat-label">Tu gasto de bolsillo</span><span class="result-ok">$${bolsilloConBlindaje.toLocaleString('es-CL')}</span></div><div class="stat-row"><span class="stat-label">Dinero protegido</span><span class="result-highlight">$${ahorro.toLocaleString('es-CL')}</span></div><div style="margin-top:10px;padding:8px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.2);border-radius:8px;font-size:0.75rem">El Blindaje X3 combina: Isapre + Seguro Catastrófico CAEC (Circular 356 SUSESO) + APV (Art. 42 bis). Resultado: de $${bolsillo.toLocaleString('es-CL')} a $${bolsilloConBlindaje.toLocaleString('es-CL')} de bolsillo.</div></div>`;
+  playReceive();
+}
+
+// ── APV TAX-SHIELD ──────────────────────────────────────────
+function calcularAPV(){
+  const renta=parseInt(document.getElementById('apv-renta').value)||0;
+  const aporte=parseInt(document.getElementById('apv-aporte').value)||0;
+  const regimen=document.getElementById('apv-regimen').value;
+  if(renta<=0||aporte<=0){alert('Ingresa renta y aporte.');return;}
+  const aporteAnual=aporte*12;
+  const limiteUF=600; const limiteAnual=Math.round(limiteUF*ufValue);
+  const aporteEfectivo=Math.min(aporteAnual,limiteAnual);
+  let ahorro=0; let detalle='';
+  if(regimen==='a'){
+    ahorro=Math.round(aporteEfectivo*0.15);
+    detalle=`El Estado bonifica el 15% de tu aporte APV.\n$${aporteEfectivo.toLocaleString('es-CL')} × 15% = **$${ahorro.toLocaleString('es-CL')} de ahorro anual**.`;
+  } else {
+    const tasaImp=renta<1000000?0.04:renta<2000000?0.08:renta<3000000?0.135:renta<5000000?0.23:0.304;
+    ahorro=Math.round(aporteEfectivo*tasaImp);
+    detalle=`Tu tasa impositiva estimada: ${Math.round(tasaImp*100)}%.\n$${aporteEfectivo.toLocaleString('es-CL')} × ${Math.round(tasaImp*100)}% = **$${ahorro.toLocaleString('es-CL')} de ahorro tributario anual**.`;
+  }
+  const pctLimite=Math.min(100,Math.round(aporteAnual/limiteAnual*100));
+  document.getElementById('apv-result').innerHTML=`<div class="result-box"><div style="color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:0.75rem;margin-bottom:12px">RESULTADO APV TAX-SHIELD</div><div class="stat-row"><span class="stat-label">Renta mensual</span><span class="stat-val">$${renta.toLocaleString('es-CL')}</span></div><div class="stat-row"><span class="stat-label">Aporte APV mensual</span><span class="stat-val">$${aporte.toLocaleString('es-CL')}</span></div><div class="stat-row"><span class="stat-label">Aporte APV anual</span><span class="stat-val">$${aporteAnual.toLocaleString('es-CL')}</span></div><div class="stat-row"><span class="stat-label">Límite anual (600 UF)</span><span class="stat-val">$${limiteAnual.toLocaleString('es-CL')}</span></div><div style="margin:10px 0"><div style="font-size:0.68rem;color:var(--muted);margin-bottom:4px">Uso del límite: ${pctLimite}%</div><div style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px"><div style="height:100%;width:${pctLimite}%;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:3px"></div></div></div><div style="padding:12px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.2);border-radius:8px;margin-top:8px"><div style="font-family:'Orbitron',sans-serif;font-size:0.7rem;color:var(--green);margin-bottom:6px">AHORRO TRIBUTARIO ANUAL</div><div style="font-size:1.2rem;font-weight:700;color:var(--green)">$${ahorro.toLocaleString('es-CL')}</div><div style="font-size:0.75rem;margin-top:6px;line-height:1.6">${detalle.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br/>')}</div></div><div style="margin-top:10px;font-size:0.68rem;color:var(--muted)">Base legal: Artículo 42 bis Ley de Impuesto a la Renta · UF $${ufValue.toLocaleString('es-CL')}</div></div>`;
+  playReceive();
+}
+
+// ── GENERADOR DE LANDING PAGES ──────────────────────────────
+async function generarLanding(){
+  const sector=document.getElementById('land-sector').value;
+  const nombre=document.getElementById('land-nombre').value||'Mi Empresa';
+  const propuesta=document.getElementById('land-propuesta').value||'Soluciones que transforman tu vida';
+  const estilo=document.getElementById('land-estilo').value;
+  document.getElementById('landing-result').innerHTML='<div class="result-box"><span style="color:var(--cyan)">Generando landing page 3D con Gemini...</span></div>';
+  const estilos={militar:'fondo negro, tipografía Orbitron, colores cyan #00d4ff y violeta #a855f7, efectos neón, grid militar',corporativo:'fondo azul oscuro #0a1628, tipografía Inter, colores azul y blanco, diseño profesional formal',minimalista:'fondo blanco, tipografía sans-serif, colores negro y gris, espacios amplios, diseño limpio',cinematico:'fondo negro, partículas animadas, gradientes dramáticos, tipografía impactante, efectos 3D CSS'};
+  const prompt=`Genera una landing page HTML completa y funcional para "${nombre}" en el sector ${sector}. Propuesta de valor: "${propuesta}". Estilo: ${estilos[estilo]}. 
+
+REQUISITOS OBLIGATORIOS:
+- HTML completo con CSS inline y JS (un solo archivo)
+- Hero section con título impactante y CTA
+- Sección de beneficios (3 cards)
+- Sección de prueba social / testimonios
+- Formulario de contacto funcional
+- Footer con datos de contacto
+- 100% responsive para móvil
+- Animaciones CSS suaves
+- Sin imágenes externas (usar gradientes y CSS)
+- Código limpio y sin errores
+
+Devuelve SOLO el código HTML completo, sin explicaciones.`;
+  const resp=await callX3(prompt);
+  // Detectar si es código HTML
+  const isHTML=resp.includes('<!DOCTYPE')||resp.includes('<html')||resp.includes('<body');
+  if(isHTML){
+    const blob=new Blob([resp],{type:'text/html'});
+    const url=URL.createObjectURL(blob);
+    document.getElementById('landing-result').innerHTML=`<div class="result-box"><div style="color:var(--green);font-family:'Orbitron',sans-serif;font-size:0.75rem;margin-bottom:10px">LANDING PAGE GENERADA</div><iframe src="${url}" style="width:100%;height:300px;border:1px solid var(--border);border-radius:8px;margin-bottom:10px"></iframe><a href="${url}" download="${nombre.replace(/\s+/g,'-')}-landing.html" style="display:block;text-align:center;padding:12px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:8px;color:var(--green);font-family:'Orbitron',sans-serif;font-size:0.75rem;text-decoration:none">⬇️ DESCARGAR LANDING PAGE HTML</a></div>`;
+  } else {
+    document.getElementById('landing-result').innerHTML=`<div class="result-box"><div style="color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:0.72rem;margin-bottom:8px">ESTRUCTURA GENERADA POR X3</div><div style="font-size:0.82rem;line-height:1.7">${formatMsg(resp)}</div></div>`;
+  }
+  playReceive();
+}
+
+// ── MICRÓFONO ───────────────────────────────────────────────
+let recognition=null;
+function toggleMic(){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){alert('Tu navegador no soporta micrófono.');return;}
+  if(!recognition){
+    recognition=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+    recognition.lang='es-CL'; recognition.continuous=false; recognition.interimResults=false;
+    recognition.onresult=e=>{ document.getElementById('chat-input').value=e.results[0][0].transcript; sendMsg(); };
+    recognition.onend=()=>document.getElementById('mic-btn').classList.remove('active');
+  }
+  const btn=document.getElementById('mic-btn');
+  if(btn.classList.contains('active')){ recognition.stop(); btn.classList.remove('active'); }
+  else { recognition.start(); btn.classList.add('active'); beep(880,0.1,'sine',0.2); }
+}
+
+// ── OFFLINE DETECTOR ────────────────────────────────────────
+window.addEventListener('online',()=>document.getElementById('offline-badge').style.display='none');
+window.addEventListener('offline',()=>document.getElementById('offline-badge').style.display='block');
+
+// ── INIT ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  fetchUF();
+  poblarSelectores();
+  // Mensaje de bienvenida
+  setTimeout(()=>{
+    addMsg('x3',`<strong style="color:var(--cyan);font-family:'Orbitron',sans-serif">X3 ACTIVO — GEMINI 2.0 FLASH</strong><br/><br/>Bienvenido. Soy tu terminal de ingeniería financiera.<br/><br/>Datos reales cargados: <strong>7 Isapres · ${ISAPRES.reduce((a,i)=>a+i.planes.length,0)} planes · UF en tiempo real</strong><br/><br/>Puedes:<br/>• Escribir cualquier pregunta sobre salud, finanzas o blindaje<br/>• Subir 📎 la foto de tu cartola o PDF de tu plan para análisis automático<br/>• Usar los módulos: Análisis · Comparar · Simular · APV · Landing<br/><br/><em style="color:var(--muted);font-size:0.75rem">Ley 21.350 · Circular 356 SUSESO · Art. 42 bis · ISO 31000</em>`);
+    beep(440,0.1,'sine',0.15); setTimeout(()=>beep(660,0.1,'sine',0.15),120); setTimeout(()=>beep(880,0.15,'sine',0.2),240);
+  },500);
+});
+</script>
+</body>
+</html>

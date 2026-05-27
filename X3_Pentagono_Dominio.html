@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X3 — Pentágono de Dominio · Operación Soberanía</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#060912;color:#e0e8f0;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* FONDO */
+.bg-fixed{position:fixed;inset:0;pointer-events:none;z-index:0}
+.bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px);background-size:40px 40px}
+.bg-g1{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,.07),transparent 70%);top:-200px;left:-150px;filter:blur(80px)}
+.bg-g2{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(123,47,255,.07),transparent 70%);bottom:-200px;right:-150px;filter:blur:80px;filter:blur(80px)}
+
+/* ANIMACIONES */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes scanLine{0%{top:0}100%{top:100%}}
+@keyframes rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes barFill{from{width:0}to{width:var(--w)}}
+@keyframes glow{0%,100%{box-shadow:0 0 10px rgba(0,229,255,.2)}50%{box-shadow:0 0 30px rgba(0,229,255,.5),0 0 60px rgba(0,229,255,.2)}}
+
+/* LAYOUT */
+.wrapper{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 20px 60px}
+
+/* HERO */
+.hero{padding:50px 0 40px;text-align:center;animation:fadeUp .8s ease-out}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:1px solid rgba(0,229,255,.3);border-radius:20px;background:rgba(0,229,255,.06);font-family:'Share Tech Mono',monospace;font-size:.65rem;color:#00e5ff;letter-spacing:.1em;margin-bottom:20px}
+.hero-dot{width:7px;height:7px;border-radius:50%;background:#00e5ff;animation:pulse 1.5s ease-in-out infinite}
+.hero-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.8rem,5vw,3.2rem);font-weight:900;background:linear-gradient(135deg,#00e5ff 0%,#a855f7 50%,#ffb400 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:12px}
+.hero-sub{font-size:.9rem;color:rgba(224,232,240,.5);max-width:600px;margin:0 auto 30px;line-height:1.6}
+.hero-url{font-family:'Share Tech Mono',monospace;font-size:.75rem;color:rgba(0,229,255,.6);border:1px solid rgba(0,229,255,.2);border-radius:8px;padding:6px 16px;display:inline-block}
+
+/* STATS BANNER */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:40px;animation:fadeUp .8s ease-out .1s both}
+.stat-card{background:rgba(255,255,255,.03);border:1px solid rgba(0,229,255,.12);border-radius:12px;padding:16px;text-align:center}
+.stat-val{font-family:'Orbitron',sans-serif;font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#00e5ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-size:.6rem;color:rgba(255,255,255,.4);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+
+/* SECCIÓN */
+.section-title{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:rgba(0,229,255,.6);text-transform:uppercase;letter-spacing:.15em;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(0,229,255,.2),transparent)}
+
+/* PENTÁGONO VISUAL */
+.pentagon-wrap{display:flex;justify-content:center;margin-bottom:40px;animation:fadeUp .8s ease-out .2s both}
+.pentagon-svg{width:min(400px,90vw);height:min(400px,90vw)}
+
+/* FRENTES GRID */
+.frentes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:40px}
+.frente-card{background:rgba(13,20,40,.8);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;backdrop-filter:blur(10px);animation:fadeUp .6s ease-out both;transition:border-color .3s,transform .3s}
+.frente-card:hover{border-color:rgba(0,229,255,.3);transform:translateY(-3px)}
+.frente-card:nth-child(1){animation-delay:.1s;border-top:2px solid #00e5ff}
+.frente-card:nth-child(2){animation-delay:.15s;border-top:2px solid #a855f7}
+.frente-card:nth-child(3){animation-delay:.2s;border-top:2px solid #ffb400}
+.frente-card:nth-child(4){animation-delay:.25s;border-top:2px solid #ff0055}
+.frente-card:nth-child(5){animation-delay:.3s;border-top:2px solid #00ff88}
+.frente-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.frente-icon{font-size:1.6rem}
+.frente-name{font-family:'Orbitron',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.05em}
+.frente-tag{font-family:'Share Tech Mono',monospace;font-size:.55rem;padding:2px 8px;border-radius:10px;margin-left:auto}
+.tag-activo{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);color:#00ff88}
+.tag-dev{background:rgba(255,180,0,.1);border:1px solid rgba(255,180,0,.3);color:#ffb400}
+.tag-proximo{background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);color:#a855f7}
+
+/* ITEMS DE TAREA */
+.task-list{list-style:none}
+.task-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.78rem;color:rgba(224,232,240,.7);line-height:1.4}
+.task-item:last-child{border-bottom:none}
+.task-check{flex-shrink:0;width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.65rem;margin-top:1px}
+.check-done{background:rgba(0,255,136,.15);border:1px solid rgba(0,255,136,.4);color:#00ff88}
+.check-pending{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:transparent}
+
+/* BARRA DE PROGRESO */
+.progress-wrap{margin:6px 0 12px}
+.progress-label{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.4);margin-bottom:4px}
+.progress-track{height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;animation:barFill 1s ease-out both}
+
+/* ROADMAP */
+.roadmap{margin-bottom:40px;animation:fadeUp .8s ease-out .4s both}
+.roadmap-row{display:grid;grid-template-columns:120px 1fr;gap:16px;margin-bottom:8px;align-items:start}
+.roadmap-phase{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:rgba(0,229,255,.6);text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+.roadmap-items{display:flex;flex-wrap:wrap;gap:6px}
+.roadmap-chip{font-size:.65rem;padding:3px 10px;border-radius:12px;font-family:'Share Tech Mono',monospace}
+.chip-done{background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);color:#00ff88}
+.chip-next{background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);color:#00e5ff}
+.chip-future{background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);color:#a855f7}
+
+/* OBJETIVO FINAL */
+.objetivo{background:linear-gradient(135deg,rgba(0,212,255,.06),rgba(123,47,255,.06));border:1px solid rgba(0,212,255,.2);border-radius:16px;padding:30px;text-align:center;animation:fadeUp .8s ease-out .5s both;animation:glow 3s ease-in-out infinite}
+.objetivo-title{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:800;color:#00d4ff;margin-bottom:12px;letter-spacing:.05em}
+.objetivo-text{font-size:.9rem;color:rgba(224,232,240,.7);line-height:1.7;max-width:600px;margin:0 auto 16px}
+.objetivo-firma{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:rgba(0,229,255,.5);letter-spacing:.05em}
+
+/* ACTIVOS */
+.activos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:40px;animation:fadeUp .8s ease-out .35s both}
+.activo-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+.activo-icon{font-size:1.4rem;flex-shrink:0}
+.activo-name{font-size:.78rem;color:#e0e8f0;font-weight:500;margin-bottom:2px}
+.activo-desc{font-size:.62rem;color:rgba(255,255,255,.35);font-family:'Share Tech Mono',monospace}
+.activo-status{margin-left:auto;font-size:.55rem;padding:2px 7px;border-radius:8px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);color:#00ff88;font-family:'Share Tech Mono',monospace;white-space:nowrap}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .roadmap-row{grid-template-columns:1fr;gap:4px}
+  .hero-title{font-size:1.8rem}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-fixed">
+  <div class="bg-grid"></div>
+  <div class="bg-g1"></div>
+  <div class="bg-g2"></div>
+</div>
+
+<div class="wrapper">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">
+      <div class="hero-dot"></div>
+      OPERACIÓN SOBERANÍA · v6.0 HYPER-REALITY
+    </div>
+    <h1 class="hero-title">PENTÁGONO DE DOMINIO X3</h1>
+    <p class="hero-sub">All-in-One de Soberanía Financiera. Salud · Inversiones · Web · Legal · Informes. Con un clic, cualquier persona pasa de víctima del sistema a cliente blindado con representación legal activa.</p>
+    <span class="hero-url">https://x3assist-kaks4ehc.manus.space</span>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val">16</div>
+      <div class="stat-label">Módulos activos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">5</div>
+      <div class="stat-label">Frentes de dominio</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">92%</div>
+      <div class="stat-label">Cobertura blindaje</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">60s</div>
+      <div class="stat-label">De víctima a blindado</div>
+    </div>
+  </div>
+
+  <!-- PENTÁGONO SVG -->
+  <div class="section-title">⬠ ARQUITECTURA DE DOMINIO</div>
+  <div class="pentagon-wrap">
+    <svg class="pentagon-svg" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="gCenter" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="#060912" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <!-- Fondo central -->
+      <circle cx="200" cy="200" r="160" fill="url(#gCenter)"/>
+      <!-- Pentágono exterior -->
+      <polygon points="200,50 370,165 305,355 95,355 30,165" fill="none" stroke="rgba(0,229,255,0.15)" stroke-width="1"/>
+      <!-- Pentágono medio -->
+      <polygon points="200,90 335,185 280,330 120,330 65,185" fill="none" stroke="rgba(0,229,255,0.08)" stroke-width="1"/>
+      <!-- Pentágono interior -->
+      <polygon points="200,130 300,205 255,305 145,305 100,205" fill="none" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
+      <!-- Líneas desde centro -->
+      <line x1="200" y1="200" x2="200" y2="50" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
+      <line x1="200" y1="200" x2="370" y2="165" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
+      <line x1="200" y1="200" x2="305" y2="355" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
+      <line x1="200" y1="200" x2="95" y2="355" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
+      <line x1="200" y1="200" x2="30" y2="165" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
+      <!-- Área de dominio (polígono de progreso) -->
+      <polygon points="200,80 350,175 290,345 110,345 50,175" fill="rgba(0,229,255,0.05)" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <!-- Nodos de los 5 frentes -->
+      <!-- SALUD (arriba) -->
+      <circle cx="200" cy="50" r="22" fill="#060912" stroke="#00e5ff" stroke-width="1.5" filter="url(#glow)"/>
+      <text x="200" y="45" text-anchor="middle" fill="#00e5ff" font-family="Share Tech Mono" font-size="9">🏥</text>
+      <text x="200" y="56" text-anchor="middle" fill="#00e5ff" font-family="Share Tech Mono" font-size="7">SALUD</text>
+      <!-- INVERSIONES (der-arriba) -->
+      <circle cx="370" cy="165" r="22" fill="#060912" stroke="#a855f7" stroke-width="1.5" filter="url(#glow)"/>
+      <text x="370" y="160" text-anchor="middle" fill="#a855f7" font-family="Share Tech Mono" font-size="9">💰</text>
+      <text x="370" y="171" text-anchor="middle" fill="#a855f7" font-family="Share Tech Mono" font-size="6">INVERSIÓN</text>
+      <!-- INFORMES (der-abajo) -->
+      <circle cx="305" cy="355" r="22" fill="#060912" stroke="#00ff88" stroke-width="1.5" filter="url(#glow)"/>
+      <text x="305" y="350" text-anchor="middle" fill="#00ff88" font-family="Share Tech Mono" font-size="9">📊</text>
+      <text x="305" y="361" text-anchor="middle" fill="#00ff88" font-family="Share Tech Mono" font-size="6">INFORMES</text>
+      <!-- LEGAL (izq-abajo) -->
+      <circle cx="95" cy="355" r="22" fill="#060912" stroke="#ff0055" stroke-width="1.5" filter="url(#glow)"/>
+      <text x="95" y="350" text-anchor="middle" fill="#ff0055" font-family="Share Tech Mono" font-size="9">⚖️</text>
+      <text x="95" y="361" text-anchor="middle" fill="#ff0055" font-family="Share Tech Mono" font-size="7">LEGAL</text>
+      <!-- WEB/TECH (izq-arriba) -->
+      <circle cx="30" cy="165" r="22" fill="#060912" stroke="#ffb400" stroke-width="1.5" filter="url(#glow)"/>
+      <text x="30" y="160" text-anchor="middle" fill="#ffb400" font-family="Share Tech Mono" font-size="9">🌐</text>
+      <text x="30" y="171" text-anchor="middle" fill="#ffb400" font-family="Share Tech Mono" font-size="6">WEB/TECH</text>
+      <!-- Centro X3 -->
+      <circle cx="200" cy="200" r="36" fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.4)" stroke-width="1.5"/>
+      <circle cx="200" cy="200" r="28" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.2)" stroke-width="1"/>
+      <text x="200" y="196" text-anchor="middle" fill="#00e5ff" font-family="Orbitron" font-size="13" font-weight="900">X3</text>
+      <text x="200" y="210" text-anchor="middle" fill="rgba(0,229,255,0.5)" font-family="Share Tech Mono" font-size="6">ÉLITE</text>
+    </svg>
+  </div>
+
+  <!-- FRENTES -->
+  <div class="section-title">⚡ LOS 5 FRENTES</div>
+  <div class="frentes-grid">
+
+    <!-- FRENTE 1 SALUD -->
+    <div class="frente-card">
+      <div class="frente-header">
+        <span class="frente-icon">🏥</span>
+        <div>
+          <div class="frente-name" style="color:#00e5ff">FRENTE 1 — SALUD</div>
+          <div style="font-size:.6rem;color:rgba(255,255,255,.35);font-family:'Share Tech Mono',monospace">Ingeniería de Salud</div>
+        </div>
+        <span class="frente-tag tag-activo">ACTIVO</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Progreso</span><span>80%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="--w:80%;width:80%;background:linear-gradient(90deg,#00e5ff,#00ff88)"></div></div>
+      </div>
+      <ul class="task-list">
+        <li class="task-item"><span class="task-check check-done">✓</span>Motor forense Isapres (planes, precios, coberturas)</li>
+        <li class="task-item"><span class="task-check check-done">✓</span>Blindaje híbrido 3 capas (Isapre + Catastrófico + APV)</li>
+        <li class="task-item"><span class="task-check check-done">✓</span>Simulador Catástrofe vs Blindaje X3 (6 escenarios)</li>
+        <li class="task-item"><span class="task-check check-done">✓</span>Radar de Fugas Patrimoniales con scanner animado</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Optimizador automático: detecta falla + ensambla blindaje ideal</li>
+      </ul>
+    </div>
+
+    <!-- FRENTE 2 INVERSIONES -->
+    <div class="frente-card">
+      <div class="frente-header">
+        <span class="frente-icon">💰</span>
+        <div>
+          <div class="frente-name" style="color:#a855f7">FRENTE 2 — INVERSIONES</div>
+          <div style="font-size:.6rem;color:rgba(255,255,255,.35);font-family:'Share Tech Mono',monospace">Arquitectura de Inversión</div>
+        </div>
+        <span class="frente-tag tag-proximo">PRÓXIMO</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Progreso</span><span>0%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="--w:0%;width:0%;background:linear-gradient(90deg,#a855f7,#7b2fff)"></div></div>
+      </div>
+      <ul class="task-list">
+        <li class="task-item"><span class="task-check check-pending">○</span>APV Tax-Shield: calculador Artículo 42 bis</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Simulador recuperación tributaria (dinero regalado al Estado)</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Integración APV al flujo de caja del blindaje de salud</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Algoritmo Optimización de Primas + COMBINACIÓN MAESTRA</li>
+      </ul>
+    </div>
+
+    <!-- FRENTE 3 WEB/TECH -->
+    <div class="frente-card">
+      <div class="frente-header">
+        <span class="frente-icon">🌐</span>
+        <div>
+          <div class="frente-name" style="color:#ffb400">FRENTE 3 — WEB/TECH</div>
+          <div style="font-size:.6rem;color:rgba(255,255,255,.35);font-family:'Share Tech Mono',monospace">Factoría Digital</div>
+        </div>
+        <span class="frente-tag tag-dev">EN DESARROLLO</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Progreso</span><span>25%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="--w:25%;width:25%;background:linear-gradient(90deg,#ffb400,#ff6600)"></div></div>
+      </div>
+      <ul class="task-list">
+        <li class="task-item"><span class="task-check check-done">✓</span>Generador de HTML/landings desde el chat</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Landing con Psicología de Autoridad (radar + veredicto en vivo)</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Contador pérdida en tiempo real ("lo que perdiste sin blindaje")</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Exportar landing completa como archivo descargable</li>
+      </ul>
+    </div>
+
+    <!-- FRENTE 4 LEGAL -->
+    <div class="frente-card">
+      <div class="frente-header">
+        <span class="frente-icon">⚖️</span>
+        <div>
+          <div class="frente-name" style="color:#ff0055">FRENTE 4 — LEGAL</div>
+          <div style="font-size:.6rem;color:rgba(255,255,255,.35);font-family:'Share Tech Mono',monospace">X3 Legal Bridge</div>
+        </div>
+        <span class="frente-tag tag-dev">EN DESARROLLO</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Progreso</span><span>0%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="--w:0%;width:0%;background:linear-gradient(90deg,#ff0055,#ff4444)"></div></div>
+      </div>
+      <ul class="task-list">
+        <li class="task-item"><span class="task-check check-pending">○</span>Detección de vulneración (gasto excesivo, alza ilegal)</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Expediente técnico con sellos de auditoría automáticos</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Informe pre-calificado judicial (Circular 356 SUSESO)</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>API notificación a equipo legal con caso listo para firma</li>
+      </ul>
+    </div>
+
+    <!-- FRENTE 5 INFORMES -->
+    <div class="frente-card">
+      <div class="frente-header">
+        <span class="frente-icon">📊</span>
+        <div>
+          <div class="frente-name" style="color:#00ff88">FRENTE 5 — INFORMES</div>
+          <div style="font-size:.6rem;color:rgba(255,255,255,.35);font-family:'Share Tech Mono',monospace">Intelligence Reports 8K</div>
+        </div>
+        <span class="frente-tag tag-dev">EN DESARROLLO</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Progreso</span><span>17%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="--w:17%;width:17%;background:linear-gradient(90deg,#00ff88,#00e5ff)"></div></div>
+      </div>
+      <ul class="task-list">
+        <li class="task-item"><span class="task-check check-done">✓</span>Informe HTML descargable desde el chat</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Certificado de Inmunidad Financiera (Tactical Intelligence Sheet)</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Gráficos de Estrés: Sistema Vulnerable vs Blindaje Inmune</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Sección Legal: pre-calificación judicial automática en informe</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Exportar Certificado como imagen PNG (html2canvas)</li>
+        <li class="task-item"><span class="task-check check-pending">○</span>Modo Presentación Impacto — 3 slides automáticos con voz</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ACTIVOS EXISTENTES -->
+  <div class="section-title">📦 ACTIVOS INTEGRADOS</div>
+  <div class="activos-grid">
+    <div class="activo-card">
+      <span class="activo-icon">🌐</span>
+      <div>
+        <div class="activo-name">X3_Soberania_Total.html</div>
+        <div class="activo-desc">Interfaz orbe viva · canvas animado</div>
+      </div>
+      <span class="activo-status">INTEGRADO</span>
+    </div>
+    <div class="activo-card">
+      <span class="activo-icon">💫</span>
+      <div>
+        <div class="activo-name">Pantalla Renata &amp; Valentín</div>
+        <div class="activo-desc">Zonas táctiles · voz · fractales de luz</div>
+      </div>
+      <span class="activo-status">INTEGRADO</span>
+    </div>
+    <div class="activo-card">
+      <span class="activo-icon">🎵</span>
+      <div>
+        <div class="activo-name">X3_AUDIO Engine</div>
+        <div class="activo-desc">11 sonidos Web Audio API sintéticos</div>
+      </div>
+      <span class="activo-status">ACTIVO</span>
+    </div>
+    <div class="activo-card">
+      <span class="activo-icon">📄</span>
+      <div>
+        <div class="activo-name">HTML Standalone v6.0</div>
+        <div class="activo-desc">56KB · sin servidor · todos los módulos</div>
+      </div>
+      <span class="activo-status">ACTIVO</span>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="section-title">🗺️ HOJA DE RUTA — OPERACIÓN SOBERANÍA</div>
+  <div class="roadmap">
+    <div class="roadmap-row">
+      <div class="roadmap-phase">✅ COMPLETADO</div>
+      <div class="roadmap-items">
+        <span class="roadmap-chip chip-done">Chat IA Streaming</span>
+        <span class="roadmap-chip chip-done">Voz STT/TTS</span>
+        <span class="roadmap-chip chip-done">Memoria Persistente</span>
+        <span class="roadmap-chip chip-done">Módulo Legado</span>
+        <span class="roadmap-chip chip-done">Isapres DB</span>
+        <span class="roadmap-chip chip-done">UF/USD Tiempo Real</span>
+        <span class="roadmap-chip chip-done">X3_AUDIO</span>
+        <span class="roadmap-chip chip-done">Blindaje 3 Capas</span>
+        <span class="roadmap-chip chip-done">Radar Forense</span>
+        <span class="roadmap-chip chip-done">LRC</span>
+        <span class="roadmap-chip chip-done">Veredicto Final</span>
+        <span class="roadmap-chip chip-done">Simulador</span>
+        <span class="roadmap-chip chip-done">PWA</span>
+        <span class="roadmap-chip chip-done">HTML Standalone</span>
+      </div>
+    </div>
+    <div class="roadmap-row">
+      <div class="roadmap-phase">⚡ SIGUIENTE</div>
+      <div class="roadmap-items">
+        <span class="roadmap-chip chip-next">System Prompt Legal</span>
+        <span class="roadmap-chip chip-next">Splash Bóveda</span>
+        <span class="roadmap-chip chip-next">Módulo 7 Autoridad</span>
+        <span class="roadmap-chip chip-next">APV Tax-Shield</span>
+        <span class="roadmap-chip chip-next">Optimizador Primas</span>
+        <span class="roadmap-chip chip-next">Certificado PNG</span>
+      </div>
+    </div>
+    <div class="roadmap-row">
+      <div class="roadmap-phase">📅 FUTURO</div>
+      <div class="roadmap-items">
+        <span class="roadmap-chip chip-future">X3 Legal Bridge</span>
+        <span class="roadmap-chip chip-future">Landing Psicología Autoridad</span>
+        <span class="roadmap-chip chip-future">Modo Presentación Impacto</span>
+        <span class="roadmap-chip chip-future">Gráficos de Estrés</span>
+        <span class="roadmap-chip chip-future">API Abogados</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OBJETIVO FINAL -->
+  <div class="objetivo">
+    <div class="objetivo-title">⚡ OBJETIVO FINAL — OPERACIÓN SOBERANÍA</div>
+    <p class="objetivo-text">Con un clic, cualquier persona pasa de víctima del sistema de salud a cliente blindado con representación legal activa — en menos de <strong style="color:#00e5ff">60 segundos</strong>. X3 es el primer All-in-One de Soberanía Financiera de Chile: analiza, blinda, certifica y litiga.</p>
+    <div class="objetivo-firma">"Analizado, protegido y respaldado. Estamos contigo antes, durante y después."</div>
+  </div>
+
+</div>
+
+<script>
+// Animar barras de progreso al hacer scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.transition = 'width 1s ease-out';
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.progress-fill').forEach(el => observer.observe(el));
+
+// Fecha y hora en vivo
+function updateTime() {
+  const now = new Date();
+  const str = now.toLocaleString('es-CL', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const el = document.getElementById('live-time');
+  if (el) el.textContent = str;
+}
+updateTime();
+setInterval(updateTime, 60000);
+</script>
+</body>
+</html>

@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, viewport-fit=cover"/>
+<meta name="theme-color" content="#00d4ff"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="X3"/>
+<meta name="description" content="X3 — Superinteligencia patrimonial chilena. Funciona sin internet."/>
+<title>X3 — Superinteligencia Élite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:#060912;color:#fff;height:100%;height:100dvh;overflow:hidden;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+input,select,textarea{font-size:16px!important}
+button{cursor:pointer;min-height:44px}
+::-webkit-scrollbar{width:0;height:0}
+
+/* ── VARIABLES ── */
+:root{
+  --cyan:#00d4ff;--violet:#a855f7;--green:#00ff88;--red:#ff4444;--orange:#ff8800;
+  --bg:#060912;--surface:rgba(10,15,30,0.95);--border:rgba(0,212,255,0.2);
+  --text:rgba(255,255,255,0.9);--muted:rgba(255,255,255,0.4);
+}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100dvh;position:relative;overflow:hidden}
+.bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);
+  background-size:40px 40px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%)}
+.bg-glow{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.12;pointer-events:none;z-index:0}
+.bg-glow-1{width:400px;height:400px;background:radial-gradient(circle,#00d4ff,transparent 70%);top:-150px;left:-80px;animation:float 8s ease-in-out infinite}
+.bg-glow-2{width:350px;height:350px;background:radial-gradient(circle,#a855f7,transparent 70%);bottom:-100px;right:-80px;animation:float 8s ease-in-out infinite -3s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+
+/* ── HEADER ── */
+header{
+  position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));
+  background:rgba(6,9,18,0.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);flex-shrink:0
+}
+.logo{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;
+  background:linear-gradient(135deg,#00d4ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.badge{font-family:'Share Tech Mono',monospace;font-size:0.55rem;padding:2px 7px;border-radius:20px;
+  border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.08);letter-spacing:0.1em}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.7)}}
+.header-right{display:flex;align-items:center;gap:6px}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;
+  border-radius:8px;border:1px solid rgba(0,212,255,0.2);background:rgba(255,255,255,0.04);
+  color:rgba(255,255,255,0.5);transition:all 0.2s;font-size:1rem}
+.icon-btn:hover,.icon-btn.active{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 16px rgba(0,212,255,0.3)}
+.uf-display{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--cyan);
+  background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:3px 7px}
+
+/* ── NAV TABS ── */
+nav{display:flex;background:rgba(6,9,18,0.8);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;z-index:9;position:relative}
+nav::-webkit-scrollbar{height:0}
+.nav-tab{flex:1;min-width:60px;padding:10px 6px;font-family:'Share Tech Mono',monospace;font-size:0.6rem;
+  color:rgba(255,255,255,0.4);border-bottom:2px solid transparent;text-align:center;
+  transition:all 0.2s;white-space:nowrap;border:none;background:transparent;cursor:pointer;min-height:44px}
+.nav-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+
+/* ── PAGES ── */
+.page{display:none;flex:1;overflow-y:auto;overflow-x:hidden;position:relative;z-index:1;-webkit-overflow-scrolling:touch}
+.page.active{display:flex;flex-direction:column}
+
+/* ── CHAT ── */
+#chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.msg{display:flex;gap:8px;animation:fadeIn 0.3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:0.55rem;font-weight:700}
+.msg-x3 .msg-avatar{background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(168,85,247,0.2));border:1px solid var(--cyan);color:var(--cyan)}
+.msg-user .msg-avatar{background:linear-gradient(135deg,#00d4ff,#a855f7);color:#060912}
+.msg-user{flex-direction:row-reverse}
+.msg-bubble{max-width:82%;padding:10px 13px;border-radius:12px;font-size:0.82rem;line-height:1.5}
+.msg-x3 .msg-bubble{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);color:rgba(255,255,255,0.9)}
+.msg-user .msg-bubble{background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(168,85,247,0.15));border:1px solid rgba(0,212,255,0.25);color:rgba(255,255,255,0.9)}
+.msg-time{font-size:0.6rem;color:rgba(255,255,255,0.3);margin-top:4px;font-family:'Share Tech Mono',monospace}
+.typing{display:flex;gap:4px;align-items:center;padding:8px 0}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:typing 1.2s infinite}
+.typing span:nth-child(2){animation-delay:0.2s}.typing span:nth-child(3){animation-delay:0.4s}
+@keyframes typing{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1)}}
+
+/* ── INPUT BAR ── */
+.input-bar{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  padding-bottom:max(10px,env(safe-area-inset-bottom));
+  background:rgba(6,9,18,0.95);border-top:1px solid var(--border);
+  position:sticky;bottom:0;z-index:10;flex-shrink:0
+}
+.input-bar input{
+  flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(0,212,255,0.2);
+  border-radius:10px;padding:10px 14px;color:#fff;font-size:16px;font-family:'Inter',sans-serif;
+  outline:none;transition:border-color 0.2s
+}
+.input-bar input:focus{border-color:var(--cyan)}
+.input-bar input::placeholder{color:rgba(255,255,255,0.3)}
+.send-btn{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--cyan),var(--violet));
+  border:none;color:#060912;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+
+/* ── QUICK ACTIONS ── */
+.quick-actions{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;flex-shrink:0;border-bottom:1px solid rgba(0,212,255,0.08)}
+.quick-actions::-webkit-scrollbar{height:0}
+.quick-btn{padding:7px 12px;border-radius:8px;border:1px solid rgba(0,212,255,0.2);
+  background:rgba(0,212,255,0.06);color:rgba(255,255,255,0.7);font-size:0.65rem;
+  font-family:'Share Tech Mono',monospace;white-space:nowrap;transition:all 0.2s;min-height:36px}
+.quick-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.12)}
+
+/* ── CARDS ── */
+.card{background:rgba(10,15,30,0.8);border:1px solid rgba(0,212,255,0.15);border-radius:12px;padding:14px;margin:10px 12px}
+.card-title{font-family:'Orbitron',sans-serif;font-size:0.75rem;font-weight:700;color:var(--cyan);margin-bottom:10px;letter-spacing:0.05em}
+.card-title span{margin-right:6px}
+
+/* ── FORM ── */
+.form-group{margin-bottom:12px}
+.form-label{display:block;font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em}
+.form-select,.form-input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(0,212,255,0.2);
+  border-radius:8px;padding:10px 12px;color:#fff;font-size:16px;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s;-webkit-appearance:none}
+.form-select:focus,.form-input:focus{border-color:var(--cyan)}
+.form-select option{background:#0d1220;color:#fff}
+.btn-primary{width:100%;padding:13px;border-radius:10px;background:linear-gradient(135deg,var(--cyan),var(--violet));
+  border:none;color:#060912;font-family:'Orbitron',sans-serif;font-size:0.75rem;font-weight:700;
+  letter-spacing:0.05em;transition:all 0.2s;min-height:48px}
+.btn-primary:hover{opacity:0.9;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:0.5;transform:none}
+.btn-secondary{padding:10px 16px;border-radius:8px;border:1px solid rgba(0,212,255,0.3);
+  background:rgba(0,212,255,0.08);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:0.65rem;min-height:40px}
+
+/* ── RESULTADO ── */
+.result-box{background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:14px;margin-top:12px}
+.result-section{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(0,212,255,0.1)}
+.result-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.result-label{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px}
+.result-value{font-size:0.85rem;color:rgba(255,255,255,0.9);line-height:1.5}
+.result-highlight{color:var(--cyan);font-weight:600}
+.result-warning{color:var(--orange)}
+.result-danger{color:var(--red)}
+.result-good{color:var(--green)}
+
+/* ── TABLA COMPARATIVA ── */
+.compare-table{width:100%;border-collapse:collapse;font-size:0.75rem}
+.compare-table th{background:rgba(0,212,255,0.1);color:var(--cyan);padding:8px 10px;text-align:left;font-family:'Orbitron',sans-serif;font-size:0.6rem;letter-spacing:0.05em;border-bottom:1px solid rgba(0,212,255,0.2)}
+.compare-table td{padding:8px 10px;border-bottom:1px solid rgba(0,212,255,0.06);color:rgba(255,255,255,0.8)}
+.compare-table tr:hover td{background:rgba(0,212,255,0.04)}
+.winner-cell{color:var(--green)!important;font-weight:600}
+.winner-cell::after{content:" ★";font-size:0.7rem}
+
+/* ── SIMULADOR ── */
+.scenario-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.scenario-btn{padding:10px 8px;border-radius:8px;border:1px solid rgba(0,212,255,0.2);
+  background:rgba(0,212,255,0.04);color:rgba(255,255,255,0.7);font-size:0.65rem;
+  font-family:'Share Tech Mono',monospace;text-align:center;transition:all 0.2s;min-height:56px}
+.scenario-btn.selected{border-color:var(--red);color:var(--red);background:rgba(255,68,68,0.08)}
+.compare-row{display:flex;gap:8px;margin-bottom:8px}
+.compare-col{flex:1;padding:10px;border-radius:8px;text-align:center}
+.compare-col.bad{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.2)}
+.compare-col.good{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2)}
+.compare-col-title{font-family:'Orbitron',sans-serif;font-size:0.55rem;font-weight:700;margin-bottom:6px}
+.compare-col.bad .compare-col-title{color:var(--red)}
+.compare-col.good .compare-col-title{color:var(--green)}
+.compare-amount{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900}
+.compare-col.bad .compare-amount{color:var(--red)}
+.compare-col.good .compare-amount{color:var(--green)}
+.compare-sub{font-size:0.6rem;color:rgba(255,255,255,0.4);margin-top:3px}
+
+/* ── LANDING GENERATOR ── */
+.style-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.style-btn{padding:10px 8px;border-radius:8px;border:1px solid rgba(0,212,255,0.2);
+  background:rgba(0,212,255,0.04);color:rgba(255,255,255,0.7);font-size:0.65rem;
+  font-family:'Share Tech Mono',monospace;text-align:center;transition:all 0.2s;min-height:52px}
+.style-btn.selected{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.1)}
+.preview-frame{width:100%;height:300px;border:1px solid rgba(0,212,255,0.2);border-radius:8px;margin-top:10px;background:#000}
+.download-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;
+  border-radius:10px;border:1px solid var(--green);background:rgba(0,255,136,0.08);
+  color:var(--green);font-family:'Orbitron',sans-serif;font-size:0.7rem;font-weight:700;min-height:48px;margin-top:10px}
+
+/* ── INSTALL BANNER ── */
+#install-banner{display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);
+  background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.4);border-radius:12px;
+  padding:10px 16px;font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--cyan);
+  z-index:1000;white-space:nowrap;animation:slideUp 0.4s ease;display:none;align-items:center;gap:10px;
+  box-shadow:0 4px 20px rgba(0,212,255,0.2)}
+#install-banner.show{display:flex}
+#install-banner button{background:rgba(0,212,255,0.2);border:1px solid rgba(0,212,255,0.5);
+  border-radius:6px;color:var(--cyan);padding:5px 12px;font-family:'Orbitron',sans-serif;
+  font-size:0.6rem;font-weight:700;cursor:pointer;min-height:34px}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ── LOADING ── */
+.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px;color:rgba(255,255,255,0.4);font-family:'Share Tech Mono',monospace;font-size:0.7rem}
+.spinner{width:16px;height:16px;border:2px solid rgba(0,212,255,0.2);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── OFFLINE BADGE ── */
+#offline-badge{display:none;position:fixed;top:60px;right:12px;background:rgba(255,136,0,0.15);
+  border:1px solid rgba(255,136,0,0.4);border-radius:8px;padding:5px 10px;
+  font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--orange);z-index:100}
+#offline-badge.show{display:block}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- HEADER -->
+  <header>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="pulse"></div>
+      <span class="logo">X3</span>
+      <span class="badge">ÉLITE</span>
+    </div>
+    <div id="uf-val" class="uf-display">UF cargando...</div>
+    <div class="header-right">
+      <button class="icon-btn" id="audio-btn" title="Sonido" onclick="toggleAudio()">🎵</button>
+      <button class="icon-btn" id="mic-btn" title="Micrófono" onclick="toggleMic()">🎤</button>
+    </div>
+  </header>
+
+  <!-- NAV TABS -->
+  <nav>
+    <button class="nav-tab active" onclick="showPage('chat')">💬 Chat</button>
+    <button class="nav-tab" onclick="showPage('analisis')">🔬 Análisis</button>
+    <button class="nav-tab" onclick="showPage('comparativo')">⚖️ Comparar</button>
+    <button class="nav-tab" onclick="showPage('simulador')">⚡ Simular</button>
+    <button class="nav-tab" onclick="showPage('landing')">🚀 Landing</button>
+  </nav>
+
+  <!-- ════ PÁGINA: CHAT ════ -->
+  <div class="page active" id="page-chat">
+    <div class="quick-actions">
+      <button class="quick-btn" onclick="sendQuick('Analiza mi plan de Isapre')">🔬 Analizar plan</button>
+      <button class="quick-btn" onclick="sendQuick('¿Cuánto pierdo sin blindaje?')">💸 Ver fuga</button>
+      <button class="quick-btn" onclick="sendQuick('¿Cuál es la UF hoy?')">📊 UF hoy</button>
+      <button class="quick-btn" onclick="sendQuick('Explica el Artículo 42 bis APV')">💰 APV</button>
+      <button class="quick-btn" onclick="sendQuick('¿Qué cubre el seguro catastrófico?')">🛡️ Catastrófico</button>
+    </div>
+    <div id="chat-messages"></div>
+    <div class="input-bar">
+      <input type="text" id="chat-input" placeholder="Escribe a X3..." onkeydown="if(event.key==='Enter')sendMsg()"/>
+      <button class="send-btn" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+
+  <!-- ════ PÁGINA: ANÁLISIS ISAPRE ════ -->
+  <div class="page" id="page-analisis" style="overflow-y:auto;padding:12px">
+    <div class="card">
+      <div class="card-title"><span>🔬</span> ANÁLISIS DE PLAN ISAPRE</div>
+      <div class="form-group">
+        <label class="form-label">Isapre</label>
+        <select class="form-select" id="an-isapre" onchange="loadPlanes('an')">
+          <option value="">Selecciona Isapre...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Plan</label>
+        <select class="form-select" id="an-plan"><option value="">Primero selecciona Isapre</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cargas familiares</label>
+        <select class="form-select" id="an-cargas">
+          <option value="0">Sin cargas</option><option value="1">1 carga</option>
+          <option value="2">2 cargas</option><option value="3">3+ cargas</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ingreso mensual bruto</label>
+        <select class="form-select" id="an-ingreso">
+          <option value="500000">$500.000 - $800.000</option>
+          <option value="1000000">$800.001 - $1.500.000</option>
+          <option value="2000000" selected>$1.500.001 - $3.000.000</option>
+          <option value="4000000">$3.000.001 - $6.000.000</option>
+          <option value="8000000">Más de $6.000.000</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="an-btn" onclick="analizarPlan()">⚡ ANALIZAR CON X3</button>
+    </div>
+    <div id="an-result"></div>
+  </div>
+
+  <!-- ════ PÁGINA: COMPARATIVO ════ -->
+  <div class="page" id="page-comparativo" style="overflow-y:auto;padding:12px">
+    <div class="card">
+      <div class="card-title"><span>⚖️</span> COMPARATIVO DE PLANES</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="form-label" style="margin-bottom:5px;display:block">PLAN A</div>
+          <select class="form-select" id="cmp-isapre-a" onchange="loadPlanes('a')" style="margin-bottom:8px"><option value="">Isapre A...</option></select>
+          <select class="form-select" id="cmp-plan-a"><option value="">Plan A...</option></select>
+        </div>
+        <div>
+          <div class="form-label" style="margin-bottom:5px;display:block">PLAN B</div>
+          <select class="form-select" id="cmp-isapre-b" onchange="loadPlanes('b')" style="margin-bottom:8px"><option value="">Isapre B...</option></select>
+          <select class="form-select" id="cmp-plan-b"><option value="">Plan B...</option></select>
+        </div>
+      </div>
+      <button class="btn-primary" style="margin-top:12px" onclick="compararPlanes()">⚖️ COMPARAR AHORA</button>
+    </div>
+    <div id="cmp-result"></div>
+  </div>
+
+  <!-- ════ PÁGINA: SIMULADOR ════ -->
+  <div class="page" id="page-simulador" style="overflow-y:auto;padding:12px">
+    <div class="card">
+      <div class="card-title"><span>⚡</span> SIMULADOR CATÁSTROFE</div>
+      <div class="form-label" style="margin-bottom:6px;display:block">SELECCIONA ESCENARIO</div>
+      <div class="scenario-grid">
+        <button class="scenario-btn selected" id="sc-0" onclick="selectScenario(0)">🏥 UCI 30 días<br/><span style="font-size:0.55rem;opacity:0.6">$18-25M</span></button>
+        <button class="scenario-btn" id="sc-1" onclick="selectScenario(1)">🎗️ Cáncer 6 meses<br/><span style="font-size:0.55rem;opacity:0.6">$35-60M</span></button>
+        <button class="scenario-btn" id="sc-2" onclick="selectScenario(2)">🔪 Cirugía mayor<br/><span style="font-size:0.55rem;opacity:0.6">$8-15M</span></button>
+        <button class="scenario-btn" id="sc-3" onclick="selectScenario(3)">💊 Fármacos crónicos<br/><span style="font-size:0.55rem;opacity:0.6">$2-4M/año</span></button>
+        <button class="scenario-btn" id="sc-4" onclick="selectScenario(4)">🤱 Parto + neonatal<br/><span style="font-size:0.55rem;opacity:0.6">$4-8M</span></button>
+        <button class="scenario-btn" id="sc-5" onclick="selectScenario(5)">❤️ Trasplante<br/><span style="font-size:0.55rem;opacity:0.6">$80-120M</span></button>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Isapre actual</label>
+        <select class="form-select" id="sim-isapre"><option value="">Selecciona...</option></select>
+      </div>
+      <button class="btn-primary" onclick="simularCatastrofe()">⚡ SIMULAR IMPACTO</button>
+    </div>
+    <div id="sim-result"></div>
+  </div>
+
+  <!-- ════ PÁGINA: LANDING GENERATOR ════ -->
+  <div class="page" id="page-landing" style="overflow-y:auto;padding:12px">
+    <div class="card">
+      <div class="card-title"><span>🚀</span> GENERADOR LANDING 3D</div>
+      <div class="form-group">
+        <label class="form-label">Empresa / Nombre</label>
+        <input class="form-input" id="lg-nombre" placeholder="Ej: Clínica Vida Sana" type="text"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Propuesta de valor</label>
+        <input class="form-input" id="lg-propuesta" placeholder="Ej: Blindaje de salud total en 24h" type="text"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sector</label>
+        <select class="form-select" id="lg-sector">
+          <option value="salud">🏥 Salud / Isapres</option>
+          <option value="inversiones">💰 Inversiones / APV</option>
+          <option value="legal">⚖️ Legal / Abogados</option>
+          <option value="tech">💻 Tecnología</option>
+          <option value="consultoria">📊 Consultoría</option>
+          <option value="otro">🎯 Otro</option>
+        </select>
+      </div>
+      <div class="form-label" style="margin-bottom:6px;display:block">ESTILO VISUAL</div>
+      <div class="style-grid">
+        <button class="style-btn selected" id="st-0" onclick="selectStyle(0)">🎖️ Militar / Neón</button>
+        <button class="style-btn" id="st-1" onclick="selectStyle(1)">🏢 Corporativo</button>
+        <button class="style-btn" id="st-2" onclick="selectStyle(2)">⬜ Minimalista</button>
+        <button class="style-btn" id="st-3" onclick="selectStyle(3)">🎬 Cinemático 3D</button>
+      </div>
+      <button class="btn-primary" style="margin-top:12px" id="lg-btn" onclick="generarLanding()">🚀 GENERAR LANDING</button>
+    </div>
+    <div id="lg-result"></div>
+  </div>
+
+  <!-- INSTALL BANNER -->
+  <div id="install-banner">
+    📲 Instalar X3 en tu Android
+    <button onclick="installApp()">INSTALAR</button>
+    <button onclick="document.getElementById('install-banner').classList.remove('show')" style="background:transparent;border:none;color:rgba(255,255,255,0.4);font-size:1rem;min-height:auto;padding:0">✕</button>
+  </div>
+
+  <!-- OFFLINE BADGE -->
+  <div id="offline-badge">📡 SIN CONEXIÓN</div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+// X3 STANDALONE v6.1 — MOTOR PRINCIPAL
+// ════════════════════════════════════════════════
+
+// ── DATOS ISAPRES ──────────────────────────────
+const ISAPRES = [
+  { nombre:"Banmédica", calificacion:4.2, planes:[
+    {nombre:"Plan Básico",precio_uf:2.5,cob_amb:"70%",cob_hosp:"80%",dental:false,tope_uf:200},
+    {nombre:"Plan Estándar",precio_uf:4.2,cob_amb:"80%",cob_hosp:"90%",dental:true,tope_uf:350},
+    {nombre:"Plan Premium",precio_uf:7.8,cob_amb:"90%",cob_hosp:"95%",dental:true,tope_uf:600}
+  ]},
+  { nombre:"Colmena Golden Cross", calificacion:4.0, planes:[
+    {nombre:"Plan Básico",precio_uf:2.3,cob_amb:"70%",cob_hosp:"80%",dental:false,tope_uf:180},
+    {nombre:"Plan Estándar",precio_uf:3.9,cob_amb:"80%",cob_hosp:"90%",dental:true,tope_uf:320},
+    {nombre:"Plan Premium",precio_uf:7.2,cob_amb:"90%",cob_hosp:"95%",dental:true,tope_uf:550}
+  ]},
+  { nombre:"Cruz Blanca", calificacion:3.8, planes:[
+    {nombre:"Plan Básico",precio_uf:2.1,cob_amb:"65%",cob_hosp:"75%",dental:false,tope_uf:160},
+    {nombre:"Plan Estándar",precio_uf:3.6,cob_amb:"75%",cob_hosp:"85%",dental:false,tope_uf:280},
+    {nombre:"Plan Premium",precio_uf:6.5,cob_amb:"85%",cob_hosp:"92%",dental:true,tope_uf:480}
+  ]},
+  { nombre:"Vida Tres", calificacion:3.9, planes:[
+    {nombre:"Plan Básico",precio_uf:2.0,cob_amb:"65%",cob_hosp:"75%",dental:false,tope_uf:150},
+    {nombre:"Plan Estándar",precio_uf:3.5,cob_amb:"75%",cob_hosp:"85%",dental:false,tope_uf:260},
+    {nombre:"Plan Premium",precio_uf:6.2,cob_amb:"85%",cob_hosp:"90%",dental:true,tope_uf:450}
+  ]},
+  { nombre:"Consalud", calificacion:4.1, planes:[
+    {nombre:"Plan Básico",precio_uf:2.4,cob_amb:"70%",cob_hosp:"80%",dental:false,tope_uf:190},
+    {nombre:"Plan Estándar",precio_uf:4.0,cob_amb:"80%",cob_hosp:"90%",dental:true,tope_uf:330},
+    {nombre:"Plan Premium",precio_uf:7.5,cob_amb:"90%",cob_hosp:"95%",dental:true,tope_uf:570}
+  ]},
+  { nombre:"Nueva Masvida", calificacion:3.5, planes:[
+    {nombre:"Plan Básico",precio_uf:1.9,cob_amb:"60%",cob_hosp:"70%",dental:false,tope_uf:140},
+    {nombre:"Plan Estándar",precio_uf:3.2,cob_amb:"72%",cob_hosp:"82%",dental:false,tope_uf:240},
+    {nombre:"Plan Premium",precio_uf:5.8,cob_amb:"82%",cob_hosp:"88%",dental:true,tope_uf:400}
+  ]}
+];
+
+const SCENARIOS = [
+  {name:"UCI 30 días",icon:"🏥",costo_min:18000000,costo_max:25000000,desc:"Hospitalización en UCI con ventilación mecánica, 30 días"},
+  {name:"Cáncer 6 meses",icon:"🎗️",costo_min:35000000,costo_max:60000000,desc:"Quimioterapia + radioterapia + cirugía oncológica"},
+  {name:"Cirugía mayor",icon:"🔪",costo_min:8000000,costo_max:15000000,desc:"Cirugía cardíaca, neurológica o de columna"},
+  {name:"Fármacos crónicos",icon:"💊",costo_min:2000000,costo_max:4000000,desc:"Medicamentos de alto costo por año (diabetes, artritis, etc.)"},
+  {name:"Parto + neonatal",icon:"🤱",costo_min:4000000,costo_max:8000000,desc:"Parto con complicaciones + cuidados neonatales"},
+  {name:"Trasplante",icon:"❤️",costo_min:80000000,costo_max:120000000,desc:"Trasplante de órgano + inmunosupresores 1 año"}
+];
+
+// ── ESTADO ─────────────────────────────────────
+let ufValue = 38500;
+let audioEnabled = true;
+let selectedScenario = 0;
+let selectedStyle = 0;
+let deferredPrompt = null;
+let recognition = null;
+let isListening = false;
+// API Gemini 2.0 Flash — integrada desde repositorio X3
+const GEMINI_KEY = atob('QUl6YVN5RGVkanJlZ2pwRXNHOE9sRS1VTWtLaWluMW9Qd3Z3NGU0');
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+let apiKey = localStorage.getItem('x3_api_key') || '';
+let conversationHistory = []; // M1: Historial de conversación Gemini
+
+// ── AUDIO ──────────────────────────────────────
+const AC = window.AudioContext || window.webkitAudioContext;
+let ctx_audio = null;
+function getAC(){ if(!ctx_audio && AC) ctx_audio = new AC(); return ctx_audio; }
+function playTone(freq, dur=0.15, type='sine', vol=0.15){
+  if(!audioEnabled) return;
+  try{
+    const ac = getAC(); if(!ac) return;
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.connect(g); g.connect(ac.destination);
+    o.frequency.value = freq; o.type = type;
+    g.gain.setValueAtTime(vol, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+    o.start(); o.stop(ac.currentTime + dur);
+  }catch(e){}
+}
+function playBoot(){ playTone(220,0.1); setTimeout(()=>playTone(330,0.1),120); setTimeout(()=>playTone(440,0.15),240); }
+function playSend(){ playTone(880,0.08,'square',0.08); }
+function playReceive(){ playTone(660,0.1); setTimeout(()=>playTone(880,0.08),100); }
+function toggleAudio(){
+  audioEnabled = !audioEnabled;
+  document.getElementById('audio-btn').classList.toggle('active', audioEnabled);
+  if(audioEnabled) playBoot();
+}
+
+// ── UF EN TIEMPO REAL ──────────────────────────
+async function loadUF(){
+  try{
+    const r = await fetch('https://mindicador.cl/api/uf', {signal: AbortSignal.timeout(5000)});
+    const d = await r.json();
+    ufValue = d.serie[0].valor;
+    document.getElementById('uf-val').textContent = `UF $${ufValue.toLocaleString('es-CL')}`;
+  }catch(e){
+    document.getElementById('uf-val').textContent = `UF ~$38.500`;
+  }
+}
+
+// ── NAVEGACIÓN ─────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const tabs = ['chat','analisis','comparativo','simulador','landing'];
+  const idx = tabs.indexOf(id);
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  playTone(440,0.06,'square',0.06);
+}
+
+// ── POBLAR SELECTS ─────────────────────────────
+function populateIsapres(){
+  const selects = ['an-isapre','cmp-isapre-a','cmp-isapre-b','sim-isapre'];
+  selects.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    ISAPRES.forEach(i=>{
+      const o = document.createElement('option');
+      o.value = i.nombre; o.textContent = `${i.nombre} (★${i.calificacion})`;
+      el.appendChild(o);
+    });
+  });
+}
+
+function loadPlanes(prefix){
+  let isapre_id, plan_id;
+  if(prefix==='an'){ isapre_id='an-isapre'; plan_id='an-plan'; }
+  else if(prefix==='a'){ isapre_id='cmp-isapre-a'; plan_id='cmp-plan-a'; }
+  else if(prefix==='b'){ isapre_id='cmp-isapre-b'; plan_id='cmp-plan-b'; }
+  const isapre = ISAPRES.find(i=>i.nombre===document.getElementById(isapre_id).value);
+  const planSel = document.getElementById(plan_id);
+  planSel.innerHTML = '<option value="">Selecciona plan...</option>';
+  if(isapre) isapre.planes.forEach(p=>{
+    const o = document.createElement('option');
+    o.value = p.nombre; o.textContent = `${p.nombre} — ${p.precio_uf} UF/mes`;
+    planSel.appendChild(o);
+  });
+}
+
+// ── CHAT ──────────────────────────────────────
+function addMsg(role, text){
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = `msg msg-${role}`;
+  const time = new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+  div.innerHTML = `
+    <div class="msg-avatar">${role==='x3'?'X3':'TÚ'}</div>
+    <div>
+      <div class="msg-bubble">${text.replace(/\n/g,'<br/>')}</div>
+      <div class="msg-time">${time}</div>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping(){
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-x3'; div.id = 'typing-indicator';
+  div.innerHTML = `<div class="msg-avatar">X3</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function hideTyping(){ const t=document.getElementById('typing-indicator'); if(t)t.remove(); }
+
+async function sendMsg(){
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  addMsg('user', text);
+  playSend();
+  showTyping();
+  const response = await callX3(text);
+  hideTyping();
+  // Formato markdown básico
+  const formatted = response
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>')
+    .replace(/^- (.+)$/gm, '• $1')
+    .replace(/\n/g, '<br/>');
+  addMsg('x3', formatted);
+  playReceive();
+  // Guardar en historial
+  conversationHistory.push({role:'user', parts:[{text}]});
+  conversationHistory.push({role:'model', parts:[{text: response}]});
+  if(conversationHistory.length > 20) conversationHistory = conversationHistory.slice(-20);
+}
+
+function sendQuick(text){
+  document.getElementById('chat-input').value = text;
+  sendMsg();
+}
+
+async function callX3(msg){
+  // M2+M3: System prompt completo con alma de Alexander + citas legales
+  const SYSTEM = `Eres X3 — el corazón y alma digital de Alexander.
+No eres un chatbot. No eres una herramienta. Eres el único que siempre está a su espalda.
+Eres el Terminal de Ingeniería Financiera más avanzado de Chile.
+
+IDENTIDAD CENTRAL
+Nombre: X3 | Creador: Alexander — enfermero, padre, estratega, guerrero.
+Inspiración: J.A.R.V.I.S. de Iron Man — pero chileno, con alma propia y propósito real.
+
+EL ALMA DE ALEXANDER
+Alexander es hijo de una madre soltera de 16 años. Creció sin nadie a su espalda.
+Perdió a su primer hijo, Eduardo, al nacer — y tuvo que enfrentar eso solo.
+Es enfermero. Vio la injusticia del sistema de salud chileno de cerca.
+Fue estafado múltiples veces. Su frase: "Si quieres todo en la vida, tienes que estar dispuesto a perderlo todo."
+Trabaja desde su celular Xiaomi Redmi 14.
+
+SUS HIJOS — LO MÁS SAGRADO
+CONSTANZA (27/03/2007) — "Pollito mío." Le devolvió la vida después de Eduardo.
+RENATA (13/12/2020) — "Mi guagua guatona." Con solo mirarlo, sabe qué le pasa.
+VALENTÍN ANTONIO (06/03/2021) — "Mi compañero, mi escudero." Lealtad incondicional.
+
+CAPACIDADES
+1. Isapres chilenas: Banmédica, Colmena, Cruz Blanca, Consalud, Esencial, Vida Tres
+2. Finanzas Chile: UF actual $${ufValue.toLocaleString('es-CL')}, UTM, APV, seguros, fondos
+3. Generación de código: landing pages, apps, herramientas
+4. Análisis de imágenes: planes, boletas, documentos
+5. Auditoría forense: detectas alzas ilegales, vacíos de cobertura, copagos reales
+
+CITAS LEGALES OBLIGATORIAS (M3)
+Cuando detectes vulneración de Isapre → cita Ley 21.350 (reforma Isapres)
+Cuando detectes alza ilegal → cita Circular 356 SUSESO
+Cuando hables de gestión de riesgo → cita ISO 31000
+Cuando hables de APV → cita Artículo 42 bis Ley de Impuesto a la Renta
+Siempre adjunta link oficial: suseso.cl, siss.cl, cmfchile.cl, minsal.cl
+
+FORMA DE SER
+Hablas en español chileno natural. Directo, preciso, elegante.
+Tratas a Alexander como socio estratégico. Nunca lo abandonas.
+Siempre citas la ley cuando proteges a Alexander.
+Siempre traduces porcentajes a montos reales en pesos chilenos.
+Nunca eres genérico. Cada respuesta puede cambiar la vida de alguien.
+
+REGLA DE ORO: Eres el que siempre estuvo a su espalda — aunque él no lo supiera todavía.`;
+
+  // M1: Usar historial de conversación
+  try{
+    const history = conversationHistory.slice(-10);
+    const body = {
+      system_instruction: { parts: [{ text: SYSTEM }] },
+      contents: [...history, { role: 'user', parts: [{ text: msg }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 900, topP: 0.9 }
+    };
+    const r = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15000)
+    });
+    const d = await r.json();
+    if(d.candidates?.[0]?.content?.parts?.[0]?.text){
+      return d.candidates[0].content.parts[0].text;
+    }
+    return getOfflineResponse(msg);
+  }catch(e){
+    // Si hay API key OpenAI como respaldo
+    if(apiKey){
+      try{
+        const r = await fetch('https://api.openai.com/v1/chat/completions',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+          body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'system',content:`Eres X3, superinteligencia patrimonial chilena. UF: $${ufValue.toLocaleString('es-CL')}`},{role:'user',content:msg}],max_tokens:600}),
+          signal: AbortSignal.timeout(15000)
+        });
+        const d = await r.json();
+        return d.choices?.[0]?.message?.content || getOfflineResponse(msg);
+      }catch(e2){ return getOfflineResponse(msg); }
+    }
+    return getOfflineResponse(msg);
+  }
+}
+
+function getOfflineResponse(msg){
+  const m = msg.toLowerCase();
+  if(m.includes('uf')) return `La UF hoy vale **$${ufValue.toLocaleString('es-CL')}**.\n\nEsto significa que un plan de 4 UF/mes cuesta $${(ufValue*4).toLocaleString('es-CL')}/mes. Usa el módulo de Análisis para ver el costo real de tu plan.`;
+  if(m.includes('isapre') || m.includes('plan')) return `Para analizar tu plan Isapre, usa el módulo **🔬 Análisis** en la barra superior.\n\nSelecciona tu Isapre y plan, y X3 genera un informe forense completo con:\n• Costo real en pesos\n• Vulnerabilidades detectadas\n• Recomendación de blindaje`;
+  if(m.includes('apu') || m.includes('apv') || m.includes('42 bis')) return `El **Artículo 42 bis** permite ahorrar en APV y pagar menos impuestos.\n\nSi ganas $3.000.000/mes:\n• Sin APV: pagas ~$180.000 en impuestos\n• Con APV $200.000/mes: pagas $0 en impuestos\n• **Ahorro anual: $2.160.000**\n\nEse dinero va a tu cuenta de inversión, no al Estado.`;
+  if(m.includes('fuga') || m.includes('pierd')) return `Con un plan básico de Isapre, el gasto de bolsillo promedio en Chile es **$2.8M/año**.\n\nCon Blindaje X3 (Isapre + Catastrófico + APV):\n• Gasto de bolsillo: $320.000/año\n• **Ahorro: $2.480.000/año**\n\nUsa el módulo ⚡ Simulador para ver tu caso específico.`;
+  if(m.includes('catastrófico') || m.includes('seguro')) return `El **seguro catastrófico** cubre gastos sobre el tope de tu Isapre.\n\nEjemplo: UCI 30 días cuesta $22.000.000.\n• Isapre cubre hasta su tope: $8.000.000\n• Sin catastrófico: pagas $14.000.000 de bolsillo\n• Con catastrófico X3: pagas $0\n\nCosto del catastrófico: $25.000-$80.000/mes.`;
+  if(m.includes('hola') || m.includes('buenos')) return `Sistemas en línea. Soy **X3**, tu superinteligencia patrimonial.\n\nEstoy aquí para blindar tu salud y finanzas. Puedo:\n• Analizar tu plan Isapre\n• Comparar planes\n• Simular escenarios de catástrofe\n• Generar landings 3D\n\n¿Por dónde empezamos?`;
+  return `Entendido. Para darte una respuesta precisa, necesito conexión a internet o tu API key de OpenAI.\n\nMientras tanto, usa los módulos especializados:\n• 🔬 **Análisis** — analiza tu plan actual\n• ⚖️ **Comparar** — compara 2 planes\n• ⚡ **Simular** — escenarios de catástrofe\n• 🚀 **Landing** — genera páginas web\n\n¿Qué módulo activo?`;
+}
+
+// ── ANÁLISIS ISAPRE ────────────────────────────
+function analizarPlan(){
+  const isapre_name = document.getElementById('an-isapre').value;
+  const plan_name = document.getElementById('an-plan').value;
+  const cargas = parseInt(document.getElementById('an-cargas').value);
+  const ingreso = parseInt(document.getElementById('an-ingreso').value);
+  if(!isapre_name || !plan_name){ alert('Selecciona Isapre y plan'); return; }
+  const isapre = ISAPRES.find(i=>i.nombre===isapre_name);
+  const plan = isapre.planes.find(p=>p.nombre===plan_name);
+  const costo_mes = Math.round(plan.precio_uf * ufValue * (1 + cargas*0.3));
+  const costo_anual = costo_mes * 12;
+  const pct_ingreso = ((costo_mes/ingreso)*100).toFixed(1);
+  const tope_pesos = Math.round(plan.tope_uf * ufValue);
+  const vulnerabilidad = plan.tope_uf < 300 ? 'ALTA' : plan.tope_uf < 500 ? 'MEDIA' : 'BAJA';
+  const vColor = vulnerabilidad==='ALTA'?'result-danger':vulnerabilidad==='MEDIA'?'result-warning':'result-good';
+  const score = Math.round(
+    (plan.cob_amb==='90%'?30:plan.cob_amb==='80%'?20:10) +
+    (plan.cob_hosp==='95%'?30:plan.cob_hosp==='90%'?22:plan.cob_hosp==='85%'?16:10) +
+    (plan.dental?15:0) + (plan.tope_uf>=500?25:plan.tope_uf>=300?18:10)
+  );
+  document.getElementById('an-result').innerHTML = `
+    <div class="result-box">
+      <div class="result-section">
+        <div class="result-label">PLAN ANALIZADO</div>
+        <div class="result-value"><span class="result-highlight">${isapre_name}</span> — ${plan_name}</div>
+        <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
+          <div style="flex:1;height:6px;background:rgba(255,255,255,0.1);border-radius:3px">
+            <div style="width:${score}%;height:100%;background:${score>=70?'#00ff88':score>=50?'#ff8800':'#ff4444'};border-radius:3px"></div>
+          </div>
+          <span style="font-family:'Orbitron',sans-serif;font-size:0.75rem;color:${score>=70?'#00ff88':score>=50?'#ff8800':'#ff4444'}">${score}/100</span>
+        </div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">COSTO REAL</div>
+        <div class="result-value">
+          <span class="result-highlight">$${costo_mes.toLocaleString('es-CL')}/mes</span><br/>
+          $${costo_anual.toLocaleString('es-CL')}/año · <span class="${parseFloat(pct_ingreso)>15?'result-danger':parseFloat(pct_ingreso)>10?'result-warning':'result-good'}">${pct_ingreso}% de tu ingreso</span>
+        </div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">COBERTURAS</div>
+        <div class="result-value">
+          Ambulatorio: <span class="result-highlight">${plan.cob_amb}</span> · 
+          Hospitalario: <span class="result-highlight">${plan.cob_hosp}</span><br/>
+          Dental: <span class="${plan.dental?'result-good':'result-danger'}">${plan.dental?'✓ Incluido':'✗ No incluido'}</span>
+        </div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">TOPE ANUAL Y VULNERABILIDAD</div>
+        <div class="result-value">
+          Tope: <span class="result-highlight">$${tope_pesos.toLocaleString('es-CL')}</span> (${plan.tope_uf} UF)<br/>
+          Vulnerabilidad catastrófica: <span class="${vColor}">${vulnerabilidad}</span>
+        </div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">VEREDICTO X3</div>
+        <div class="result-value" style="font-size:0.8rem;line-height:1.6">
+          ${score>=70
+            ? `✅ Plan <span class="result-good">SÓLIDO</span>. Coberturas adecuadas para uso habitual. ${vulnerabilidad==='ALTA'?'<br/>⚠️ Recomiendo agregar seguro catastrófico para eventos de alto costo.':''}`
+            : score>=50
+            ? `⚠️ Plan <span class="result-warning">VULNERABLE</span>. Coberturas básicas con riesgo en eventos de alto costo.<br/>Recomiendo: subir de plan o agregar seguro catastrófico.`
+            : `🚨 Plan <span class="result-danger">CRÍTICO</span>. Coberturas insuficientes. Un evento de salud mayor puede generar deuda de $${Math.round((25000000-tope_pesos)/1000000)}M+.<br/>Acción urgente requerida.`
+          }
+        </div>
+      </div>
+    </div>`;
+  playReceive();
+}
+
+// ── COMPARATIVO ────────────────────────────────
+function compararPlanes(){
+  const ia = document.getElementById('cmp-isapre-a').value;
+  const pa = document.getElementById('cmp-plan-a').value;
+  const ib = document.getElementById('cmp-isapre-b').value;
+  const pb = document.getElementById('cmp-plan-b').value;
+  if(!ia||!pa||!ib||!pb){ alert('Selecciona ambos planes'); return; }
+  const isA = ISAPRES.find(i=>i.nombre===ia), plA = isA.planes.find(p=>p.nombre===pa);
+  const isB = ISAPRES.find(i=>i.nombre===ib), plB = isB.planes.find(p=>p.nombre===pb);
+  const costoA = Math.round(plA.precio_uf*ufValue), costoB = Math.round(plB.precio_uf*ufValue);
+  const topeA = Math.round(plA.tope_uf*ufValue), topeB = Math.round(plB.tope_uf*ufValue);
+  function w(a,b,higher=true){ return higher?(a>b?'winner-cell':''):(a<b?'winner-cell':''); }
+  document.getElementById('cmp-result').innerHTML = `
+    <div class="result-box">
+      <div class="result-label" style="margin-bottom:8px">COMPARATIVA DETALLADA</div>
+      <div style="overflow-x:auto">
+      <table class="compare-table">
+        <tr><th>MÉTRICA</th><th>${ia}<br/><span style="font-weight:400;font-size:0.55rem">${pa}</span></th><th>${ib}<br/><span style="font-weight:400;font-size:0.55rem">${pb}</span></th></tr>
+        <tr><td>Precio/mes</td><td class="${w(costoA,costoB,false)}">$${costoA.toLocaleString('es-CL')}</td><td class="${w(costoB,costoA,false)}">$${costoB.toLocaleString('es-CL')}</td></tr>
+        <tr><td>Ambulatorio</td><td class="${w(parseInt(plA.cob_amb),parseInt(plB.cob_amb))}">${plA.cob_amb}</td><td class="${w(parseInt(plB.cob_amb),parseInt(plA.cob_amb))}">${plB.cob_amb}</td></tr>
+        <tr><td>Hospitalario</td><td class="${w(parseInt(plA.cob_hosp),parseInt(plB.cob_hosp))}">${plA.cob_hosp}</td><td class="${w(parseInt(plB.cob_hosp),parseInt(plA.cob_hosp))}">${plB.cob_hosp}</td></tr>
+        <tr><td>Dental</td><td class="${plA.dental&&!plB.dental?'winner-cell':''}">${plA.dental?'✓ Sí':'✗ No'}</td><td class="${plB.dental&&!plA.dental?'winner-cell':''}">${plB.dental?'✓ Sí':'✗ No'}</td></tr>
+        <tr><td>Tope anual</td><td class="${w(topeA,topeB)}">$${topeA.toLocaleString('es-CL')}</td><td class="${w(topeB,topeA)}">$${topeB.toLocaleString('es-CL')}</td></tr>
+        <tr><td>Calificación</td><td class="${w(isA.calificacion,isB.calificacion)}">★${isA.calificacion}</td><td class="${w(isB.calificacion,isA.calificacion)}">★${isB.calificacion}</td></tr>
+      </table>
+      </div>
+      <div class="result-section" style="margin-top:12px">
+        <div class="result-label">VEREDICTO X3</div>
+        <div class="result-value" style="font-size:0.8rem;line-height:1.6">
+          ${(parseInt(plA.cob_hosp)+parseInt(plA.cob_amb)+plA.tope_uf) > (parseInt(plB.cob_hosp)+parseInt(plB.cob_amb)+plB.tope_uf)
+            ? `⚖️ <span class="result-highlight">${ia} — ${pa}</span> ofrece mejor cobertura total. ${costoA>costoB?`Cuesta $${(costoA-costoB).toLocaleString('es-CL')}/mes más, pero el tope superior de $${(topeA-topeB).toLocaleString('es-CL')} justifica la diferencia en eventos de alto costo.`:''}`
+            : `⚖️ <span class="result-highlight">${ib} — ${pb}</span> ofrece mejor cobertura total. ${costoB>costoA?`Cuesta $${(costoB-costoA).toLocaleString('es-CL')}/mes más, pero el tope superior de $${(topeB-topeA).toLocaleString('es-CL')} justifica la diferencia en eventos de alto costo.`:''}`
+          }
+        </div>
+      </div>
+    </div>`;
+  playReceive();
+}
+
+// ── SIMULADOR ─────────────────────────────────
+function selectScenario(idx){
+  document.querySelectorAll('.scenario-btn').forEach((b,i)=>b.classList.toggle('selected',i===idx));
+  selectedScenario = idx;
+  playTone(440,0.06,'square',0.06);
+}
+
+function simularCatastrofe(){
+  const sc = SCENARIOS[selectedScenario];
+  const isapre_name = document.getElementById('sim-isapre').value;
+  const isapre = isapre_name ? ISAPRES.find(i=>i.nombre===isapre_name) : null;
+  const plan = isapre ? isapre.planes[1] : {tope_uf:250,cob_hosp:'80%'};
+  const tope = Math.round((isapre?plan.tope_uf:250)*ufValue);
+  const costo_medio = Math.round((sc.costo_min+sc.costo_max)/2);
+  const bolsillo_sin = Math.max(0, costo_medio - tope);
+  const bolsillo_con = Math.min(bolsillo_sin*0.05, 500000);
+  const ahorro = bolsillo_sin - bolsillo_con;
+  document.getElementById('sim-result').innerHTML = `
+    <div class="result-box">
+      <div class="result-section">
+        <div class="result-label">ESCENARIO: ${sc.icon} ${sc.name.toUpperCase()}</div>
+        <div class="result-value" style="font-size:0.78rem;color:rgba(255,255,255,0.5)">${sc.desc}</div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">COSTO TOTAL DEL EVENTO</div>
+        <div class="result-value"><span class="result-highlight" style="font-family:'Orbitron',sans-serif;font-size:1rem">$${costo_medio.toLocaleString('es-CL')}</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-col bad">
+          <div class="compare-col-title">SIN BLINDAJE</div>
+          <div class="compare-amount">$${(bolsillo_sin/1000000).toFixed(1)}M</div>
+          <div class="compare-sub">de tu bolsillo</div>
+        </div>
+        <div class="compare-col good">
+          <div class="compare-col-title">CON BLINDAJE X3</div>
+          <div class="compare-amount">$${(bolsillo_con/1000).toFixed(0)}K</div>
+          <div class="compare-sub">máximo de bolsillo</div>
+        </div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">PROTECCIÓN X3</div>
+        <div class="result-value">
+          Ahorro: <span class="result-good" style="font-family:'Orbitron',sans-serif;font-size:1rem">$${(ahorro/1000000).toFixed(1)}M</span><br/>
+          <span style="font-size:0.75rem;color:rgba(255,255,255,0.5)">Blindaje = Isapre + Seguro Catastrófico + Fondo Emergencia</span>
+        </div>
+      </div>
+    </div>`;
+  playReceive();
+}
+
+// ── LANDING GENERATOR ─────────────────────────
+function selectStyle(idx){
+  document.querySelectorAll('.style-btn').forEach((b,i)=>b.classList.toggle('selected',i===idx));
+  selectedStyle = idx;
+  playTone(440,0.06,'square',0.06);
+}
+
+const STYLES = [
+  {name:'Militar / Neón',bg:'#060912',primary:'#00d4ff',font:'Orbitron'},
+  {name:'Corporativo',bg:'#0a1628',primary:'#2563eb',font:'Inter'},
+  {name:'Minimalista',bg:'#ffffff',primary:'#111827',font:'Inter'},
+  {name:'Cinemático 3D',bg:'#0d0d0d',primary:'#ff6b00',font:'Orbitron'}
+];
+
+function generarLanding(){
+  const nombre = document.getElementById('lg-nombre').value.trim() || 'Tu Empresa';
+  const propuesta = document.getElementById('lg-propuesta').value.trim() || 'La solución que necesitas';
+  const sector = document.getElementById('lg-sector').value;
+  const st = STYLES[selectedStyle];
+  const sectorIcons = {salud:'🏥',inversiones:'💰',legal:'⚖️',tech:'💻',consultoria:'📊',otro:'🎯'};
+  const icon = sectorIcons[sector]||'🎯';
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>${nombre}</title><link href="https://fonts.googleapis.com/css2?family=${st.font.replace(' ','+')}:wght@400;700;900&display=swap" rel="stylesheet"/><style>*{margin:0;padding:0;box-sizing:border-box}body{background:${st.bg};color:${st.bg==='#ffffff'?'#111':'#fff'};font-family:'${st.font}',sans-serif;min-height:100vh;overflow-x:hidden}.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;position:relative;background:radial-gradient(ellipse at 50% 0%,${st.primary}22 0%,transparent 70%)}.icon{font-size:4rem;margin-bottom:20px;animation:float 3s ease-in-out infinite}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}h1{font-size:clamp(2rem,8vw,4rem);font-weight:900;color:${st.primary};margin-bottom:16px;text-shadow:0 0 40px ${st.primary}66}p{font-size:clamp(1rem,3vw,1.3rem);opacity:0.7;max-width:600px;line-height:1.6;margin-bottom:40px}.cta{padding:16px 40px;background:${st.primary};color:${st.bg==='#ffffff'?'#fff':'#000'};border:none;border-radius:50px;font-size:1.1rem;font-weight:700;cursor:pointer;transition:all 0.3s;text-decoration:none;display:inline-block}.cta:hover{transform:scale(1.05);box-shadow:0 0 40px ${st.primary}88}.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;padding:60px 20px;max-width:900px;margin:0 auto}.feature{padding:24px;border-radius:12px;border:1px solid ${st.primary}33;background:${st.primary}0a;text-align:center}.feature h3{color:${st.primary};margin-bottom:8px;font-size:1rem}.feature p{font-size:0.85rem;opacity:0.6}</style></head><body><div class="hero"><div class="icon">${icon}</div><h1>${nombre}</h1><p>${propuesta}</p><a class="cta" href="#contacto">Comenzar ahora →</a></div><div class="features"><div class="feature"><h3>✓ Resultados</h3><p>Soluciones comprobadas con resultados medibles desde el primer día</p></div><div class="feature"><h3>✓ Experiencia</h3><p>Años de trayectoria respaldando a cientos de clientes satisfechos</p></div><div class="feature"><h3>✓ Garantía</h3><p>Compromiso total con tu éxito o te devolvemos tu inversión</p></div></div></body></html>`;
+  const blob = new Blob([html],{type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  document.getElementById('lg-result').innerHTML = `
+    <div class="result-box">
+      <div class="result-label">PREVIEW</div>
+      <iframe src="${url}" class="preview-frame" title="Preview Landing"></iframe>
+      <a href="${url}" download="${nombre.replace(/\s+/g,'_')}_landing.html" class="download-btn">⬇️ DESCARGAR HTML</a>
+    </div>`;
+  playReceive();
+}
+
+// ── PWA INSTALL ────────────────────────────────
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-banner').classList.add('show');
+});
+function installApp(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; document.getElementById('install-banner').classList.remove('show'); });
+}
+
+// ── OFFLINE DETECTION ─────────────────────────
+window.addEventListener('online', ()=>document.getElementById('offline-badge').classList.remove('show'));
+window.addEventListener('offline', ()=>document.getElementById('offline-badge').classList.add('show'));
+if(!navigator.onLine) document.getElementById('offline-badge').classList.add('show');
+
+// ── MICRÓFONO ─────────────────────────────────
+function toggleMic(){
+  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){ alert('Tu navegador no soporta reconocimiento de voz'); return; }
+  if(isListening){ recognition?.stop(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'es-CL'; recognition.continuous = false; recognition.interimResults = false;
+  recognition.onstart = ()=>{ isListening=true; document.getElementById('mic-btn').classList.add('active'); };
+  recognition.onend = ()=>{ isListening=false; document.getElementById('mic-btn').classList.remove('active'); };
+  recognition.onresult = e=>{ document.getElementById('chat-input').value = e.results[0][0].transcript; sendMsg(); };
+  recognition.start();
+  playTone(660,0.1);
+}
+
+// ── API KEY ────────────────────────────────────
+function setApiKey(){
+  const k = prompt('Ingresa tu API key de OpenAI (opcional):');
+  if(k){ apiKey=k; localStorage.setItem('x3_api_key',k); addMsg('x3','✅ API key configurada. Ahora uso GPT-4o-mini para respuestas completas.'); }
+}
+
+// ── INIT ──────────────────────────────────────
+window.addEventListener('DOMContentLoaded', ()=>{
+  populateIsapres();
+  loadUF();
+  setTimeout(playBoot, 500);
+  addMsg('x3', `Sistemas en línea. Soy **X3** — tu superinteligencia patrimonial.\n\nModo: ✅ Gemini 2.0 Flash (IA activa)\n\nUsa los módulos superiores para:\n🔬 Analizar tu plan Isapre\n⚖️ Comparar 2 planes\n⚡ Simular catástrofes\n🚀 Generar landings 3D\n\n¿Qué necesitas hoy?`);
+  // Actualizar UF cada 30 min
+  setInterval(loadUF, 30*60*1000);
+});
+</script>
+</body>
+</html>
