@@ -920,11 +920,12 @@ async function analizarArchivoChat(e){
   showTyping();
   try{
     const key=CFG.apiKey||_K;
-    const filePart = await buildFilePart(file, key);
+    if(isPDF) addMsg('sys','⏳ Convirtiendo PDF a imágenes... (puede tomar unos segundos)');
+    const fileParts = await buildFilePart(file, key);
     const r=await fetch(GEMINI_URL(key),{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{role:'user',parts:[
         {text:SYSTEM_PROMPT+'\n\nAnaliza este documento de salud. Extrae: nombre del plan, precio, coberturas, tope anual, prestadores. Identifica vulnerabilidades patrimoniales y recomienda blindaje X3 en 3 capas. Cita Ley 21.350 y Circular 356 SUSESO donde aplique.'},
-        filePart
+        ...fileParts
       ]}]})});
     const d=await r.json();
     if(d.error) throw new Error(d.error.message);
@@ -932,7 +933,7 @@ async function analizarArchivoChat(e){
     hideTyping(); addMsg('x3',formatMsg(resp)); playReceive();
   }catch(err){
     hideTyping();
-    addMsg('x3',`⚠️ Error al procesar el archivo: ${err.message}.<br/>Si es PDF, asegúrate de tener una API key válida (toca 🔑 NÚcleo). Para imágenes, usa JPG o PNG.`);
+    addMsg('x3',`⚠️ Error: ${err.message}`);
   }
   e.target.value='';
 }
@@ -945,11 +946,13 @@ async function analizarDocPlan(file){
   showTyping();
   try{
     const key=CFG.apiKey||_K;
-    const filePart = await buildFilePart(file, key);
+    const isPDF2 = file.type==='application/pdf';
+    if(isPDF2) addMsg('sys','⏳ Convirtiendo PDF a imágenes...');
+    const fileParts = await buildFilePart(file, key);
     const r=await fetch(GEMINI_URL(key),{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{role:'user',parts:[
         {text:SYSTEM_PROMPT+'\n\nAuditóría forense completa de este plan de salud. Entrega: 1) Datos del plan (nombre, precio, coberturas exactas) 2) Vulnerabilidades patrimoniales detectadas 3) Comparación con el mercado 4) Recomendación de blindaje X3 en 3 capas. Cita Ley 21.350 y Circular 356 SUSESO donde aplique.'},
-        filePart
+        ...fileParts
       ]}]})});
     const d=await r.json();
     if(d.error) throw new Error(d.error.message);
@@ -957,43 +960,60 @@ async function analizarDocPlan(file){
     hideTyping(); addMsg('x3',formatMsg(resp)); playReceive();
   }catch(err){
     hideTyping();
-    addMsg('x3',`⚠️ Error: ${err.message}.<br/>Para PDFs necesitas API key activa (toca 🔑 Núcleo). Para imágenes usa JPG o PNG.`);
+    addMsg('x3',`⚠️ Error al analizar: ${err.message}`);
   }
 }
 
 function toBase64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(file); }); }
 
-// Subir archivo a Gemini Files API y obtener file_uri
-async function uploadToGeminiFiles(file, key){
-  const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`;
-  const r = await fetch(uploadUrl, {
-    method: 'POST',
-    headers: {
-      'X-Goog-Upload-Command': 'start, upload, finalize',
-      'X-Goog-Upload-Header-Content-Length': file.size,
-      'X-Goog-Upload-Header-Content-Type': file.type,
-      'Content-Type': file.type
-    },
-    body: file
+// Cargar PDF.js desde CDN
+function loadPdfJs(){
+  return new Promise((res)=>{
+    if(window.pdfjsLib){ res(window.pdfjsLib); return; }
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload=()=>{
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      res(window.pdfjsLib);
+    };
+    document.head.appendChild(s);
   });
-  if(!r.ok) throw new Error('Upload failed: '+r.status);
-  const d = await r.json();
-  return d.file?.uri || null;
 }
 
-// Construir la parte correcta según tipo de archivo
+// Convertir PDF a array de imágenes base64 usando PDF.js
+async function pdfToImages(file){
+  const pdfjsLib = await loadPdfJs();
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:arrayBuffer}).promise;
+  const pages = [];
+  const maxPages = Math.min(pdf.numPages, 4); // máximo 4 páginas
+  for(let i=1; i<=maxPages; i++){
+    const page = await pdf.getPage(i);
+    const viewport = page.getViewport({scale:1.5});
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+    const b64 = canvas.toDataURL('image/jpeg',0.85).split(',')[1];
+    pages.push(b64);
+  }
+  return pages;
+}
+
+// Construir partes para Gemini según tipo de archivo
 async function buildFilePart(file, key){
   const mime = file.type || 'image/jpeg';
   const isPDF = mime === 'application/pdf';
   if(isPDF){
-    // PDFs: subir a Files API y usar file_data
-    const uri = await uploadToGeminiFiles(file, key);
-    if(!uri) throw new Error('No se obtuvo URI del archivo');
-    return { file_data: { mime_type: mime, file_uri: uri } };
+    // PDF → convertir páginas a imágenes con PDF.js (sin Files API)
+    const images = await pdfToImages(file);
+    if(!images.length) throw new Error('No se pudo leer el PDF');
+    // Retornar array de partes (una por página)
+    return images.map(b64=>({ inline_data:{ mime_type:'image/jpeg', data:b64 } }));
   } else {
-    // Imágenes: inline_data en base64
+    // Imagen directa
     const b64 = await toBase64(file);
-    return { inline_data: { mime_type: mime, data: b64 } };
+    return [{ inline_data:{ mime_type:mime, data:b64 } }];
   }
 }
 
